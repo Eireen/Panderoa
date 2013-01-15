@@ -1,1 +1,11 @@
-#!/bin/sh
+#!/bin/bash
+
+ADMIN_FOLDER="./admin"
+MODULE_FOLDER="./modules"
+
+if [ $# -eq 0 ] ; then
+#   Первоначальная настройка сервера
+    . "$ADMIN_FOLDER/init.sh"
+else
+#   Администрирование
+	. "$ADMIN_FOLDER/admin.sh"
