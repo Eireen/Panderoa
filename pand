@@ -8,4 +8,4 @@ if [ $# -eq 0 ] ; then
     . "$ADMIN_FOLDER/init.sh"
 else
 #   Администрирование
-	. "$ADMIN_FOLDER/admin.sh"
+	. "$MODULE_FOLDER/admin.sh"
