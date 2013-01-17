@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. ./conf.sh
+. "$MODULES_FOLDER/user/conf.sh"
 
 # Script to add a user to Linux system
 if [ `id -u` -eq 0 ]; then
@@ -10,11 +10,14 @@ if [ `id -u` -eq 0 ]; then
         exit 1
     else
         CRYPTED_PASS=`mkpasswd $PASSWORD 12`
-        echo $CRYPTED_PASS
         useradd -m -p $CRYPTED_PASS $LOGIN
-        [ $? -eq 0 ] && echo "User has been added to system!" || echo "Failed to add a user!"
+        EXIT_CODE=$?
+        [ $EXIT_CODE -eq 0 ] && echo "User $LOGIN has been added to system!" || {
+            echo "Failed to add a user!"
+            exit $EXIT_CODE
+        }
     fi
 else
     echo "Only root may add a user to the system"
-    exit 2
+    exit 3
 fi

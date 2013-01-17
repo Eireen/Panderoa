@@ -5,11 +5,49 @@ if [ `id -u` -ne 0 ]; then
 	exit 1
 fi
 
-ADMIN_FOLDER="./admin"
+# Проверка наличия основных рабочих каталогов
+PAND_FOLDER=`pwd`
+ADMIN_FOLDER="$PAND_FOLDER/admin"
+MODULES_FOLDER="$PAND_FOLDER/modules"
+
+if [ ! -d $ADMIN_FOLDER ]; then
+	echo "Directory $ADMIN_FOLDER doesn't exist"
+	exit 4;
+fi
+
+if [ ! -d $MODULES_FOLDER ]; then
+	echo "Directory $MODULES_FOLDER doesn't exist"
+	exit 4;
+fi
+
+# Подключение главного файла конфигурации
+MAIN_CONFIG="$PAND_FOLDER/conf.sh"
+
+if [ ! -f $MAIN_CONFIG ]; then
+	echo "File $MAIN_CONFIG not found"
+	exit 4
+fi
+
+. $MAIN_CONFIG
+
+
+INIT="$ADMIN_FOLDER/init.sh"
+ADMIN="$ADMIN_FOLDER/admin.sh"
 
 if [ $# -eq 0 ] ; then
-#   Первоначальная настройка сервера
-    . "$ADMIN_FOLDER/init.sh"
+	# Первоначальная настройка сервера
+	if [ -f $INIT ]; then
+		. $INIT
+	else
+		echo "File $INIT not found"
+		exit 5
+	fi
 else
-#   Администрирование
-	. "$ADMIN_FOLDER/admin.sh"
+	# Администрирование
+	if [ -f $ADMIN ]; then
+		. $ADMIN $*
+	else
+		echo "File $ADMIN not found"
+		exit 5
+	fi
+fi

@@ -1,13 +1,24 @@
 #!/bin/bash
 
-MODULES_FOLDER="../modules"
+# Подключение файла зависимостей модуля
+function getdeps() {
+	if [ $# -eq 0 ]; then
+		return
+	fi
+	local $module=$1
+	DEPS_FILE="$MODULES_FOLDER/$module/deps.sh"
+	if [ -f $DEPS_FILE ]; then
+		. $DEPS_FILE
+	else
+		DEPS=()
+	fi
+}
 
-. ../conf.sh
-
-function setdeps() {
+# Проверка модулей из списка зависимостей
+function checkdeps() {
 	local module=$1
 	MODULES[$module]=true
-	. "$MODULES_FOLDER/$module/deps.sh"
+	getdeps $module
 	for d in "${DEPS[@]}"; do
 		[[ ${!MODULES[@]} =~ $d ]] && {
 			MODULES[$d]=true
@@ -15,27 +26,44 @@ function setdeps() {
 			echo "Module $d from dependencies of $module not found"
 			exit 2
 		}
-		setdeps $d
+		checkdeps $d
 	done
 }
 
 # Формирование списка устанавливаемых модулей
 for module in "${!MODULES[@]}"; do
-
 	if [[ ${MODULES[$module]} != true ]]; then
 		continue
 	fi
-
-	# Подключение файла зависимостей модуля
-	. "$MODULES_FOLDER/$module/deps.sh"
-
-	# Добавление модулей из списка зависимостей в список установки
+	getdeps $module
 	for dep in "${DEPS[@]}"; do
-		setdeps $dep
+		checkdeps $dep
 	done
-
 done
 
-echo ${!MODULES[*]}
-echo ${MODULES[*]}
+# Вывод результирующего списка установки
+echo "============ INSTALL LIST ============"
+for module in "${!MODULES[@]}"; do
+	echo $module = ${MODULES[$module]}
+done
 
+# Установка
+echo "============ INSTALLATION ============"
+for module in "${ORDERED_MODULES[@]}"; do
+
+	if [ ${MODULES[$module]} != true ]; then
+		continue
+	fi
+
+	echo " ‒ Installing module $module..."
+
+	INSTALL_FILE="$MODULES_FOLDER/$module/install.sh"
+
+	if [ -f $INSTALL_FILE ]; then
+		. $INSTALL_FILE
+	else
+		echo "File $INSTALL_FILE for module $module not found"
+		exit 4
+	fi
+
+done

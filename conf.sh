@@ -10,3 +10,12 @@ MODULES=(
 	[node]=true
 	[nginx]=true
 )
+
+ORDERED_MODULES=(
+	user
+	ftp
+	other
+	mysql
+	node
+	nginx
+)
