@@ -46,6 +46,15 @@ echo "============ INSTALL LIST ============"
 for module in "${!MODULES[@]}"; do
 	echo $module = ${MODULES[$module]}
 done
+echo "======================================"
+
+# Спросить у юзера, ставить ли всё это
+read -n 1 -p "Install that modules? (y/[a]): " SURE 
+[ "$SURE" = "y" ] || {
+	echo 
+	exit
+}
+echo "" 1>&2
 
 # Установка
 echo "============ INSTALLATION ============"
