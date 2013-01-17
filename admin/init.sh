@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # Подключение файла зависимостей модуля
+# Параметры: module
 function getdeps() {
 	if [ $# -eq 0 ]; then
-		return
+		echo "Function getdeps() must be given at least 1 parameter"
+		exit 6
 	fi
-	local $module=$1
+	local module=$1
 	DEPS_FILE="$MODULES_FOLDER/$module/deps.sh"
 	if [ -f $DEPS_FILE ]; then
 		. $DEPS_FILE
@@ -15,7 +17,12 @@ function getdeps() {
 }
 
 # Проверка модулей из списка зависимостей
+# Параметры: module
 function checkdeps() {
+	if [ $# -eq 0 ]; then
+		echo "Function getdeps() must be given at least 1 parameter"
+		exit 6
+	fi
 	local module=$1
 	MODULES[$module]=true
 	getdeps $module

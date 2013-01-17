@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Выполнение заданной операции над модулем
+# Параметры: operation module
+# function process() {
+# 	if [ $# -eq 0 ]; then
+# 		echo "Function process() must be given at least 2 parameters"
+# 		exit 6
+# 	fi
+# 	local operation=$1
+# 	if [ $# -eq 1 ]; then
+# 		# Применить эту операцию ко всем модулям
+# 	else
+# 		# Получить список модулей
+
+# 	fi
+# }
+
+echo $#
 MODULE=$2
 
 [[ ${!MODULES[@]} =~ $MODULE ]] || {
