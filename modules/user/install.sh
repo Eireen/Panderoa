@@ -2,22 +2,28 @@
 
 . "$MODULES_FOLDER/user/conf.sh"
 
+# Установка необходимых пакетов
+dpkg -s whois >/dev/null 2>&1 || {
+    echo "Installing package 'whois'..."
+    apt-get install -y whois || {
+        echo "Failed to install package 'whois'. Exit."
+        exit 1
+    }
+}
+
 # Script to add a user to Linux system
 if [ `id -u` -eq 0 ]; then
-    egrep "^$LOGIN" /etc/passwd >/dev/null
-    if [ $? -eq 0 ]; then
+    egrep "^$LOGIN" /etc/passwd >/dev/null && {
         echo "User $LOGIN already exists!"
         exit 1
-    else
+    } || {
         CRYPTED_PASS=`mkpasswd $PASSWORD 12`
-        useradd -m -p $CRYPTED_PASS $LOGIN
-        EXIT_CODE=$?
-        [ $EXIT_CODE -eq 0 ] && echo "User $LOGIN has been added to system!" || {
+        useradd -m -p $CRYPTED_PASS $LOGIN && echo "User $LOGIN has been added to system!" || {
             echo "Failed to add a user!"
-            exit $EXIT_CODE
+            exit 1
         }
-    fi
+    }
 else
     echo "Only root may add a user to the system"
-    exit 3
+    exit 1
 fi

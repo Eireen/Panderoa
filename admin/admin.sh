@@ -1,47 +1,58 @@
 #!/bin/bash
 
 # Выполнение заданной операции над модулем
-# Параметры: operation module
-# function process() {
-# 	if [ $# -eq 0 ]; then
-# 		echo "Function process() must be given at least 2 parameters"
-# 		exit 6
-# 	fi
-# 	local operation=$1
-# 	if [ $# -eq 1 ]; then
-# 		# Применить эту операцию ко всем модулям
-# 	else
-# 		# Получить список модулей
+# Параметры: operation module1 [module2 [...]]
+function process() {
+	if [ $# -eq 0 ]; then
+		echo "Function process() must be given at least 2 parameters"
+		exit 6
+	fi
+	local operation=$1
+	if [ $# -eq 1 ]; then
+		# Применить эту операцию ко всем модулям
+		:
+	else
+		# Применить эту операцию к заданному списку модулей
+		shift
+		until [[ -z "$1" ]]; do
+			local module=$1
 
-# 	fi
-# }
+			[[ ${!MODULES[@]} =~ $module ]] || {
+				echo "Module $module not found"
+				exit 3
+			}
+			MODULE_FOLDER="$MODULES_FOLDER/$module"
 
-echo $#
-MODULE=$2
+			if [ ! -d $MODULE_FOLDER ]; then
+			echo "Directory $MODULE_FOLDER doesn't exist"
+			exit 4;
+			fi
 
-[[ ${!MODULES[@]} =~ $MODULE ]] || {
-	echo "Module $MODULE not found"
-	exit 3
+			OPERATION_FILE="$MODULE_FOLDER/$operation.sh"
+			if [ -f $OPERATION_FILE ]; then
+				. $OPERATION_FILE
+			else
+				echo "File $OPERATION_FILE not found"
+				exit 4
+			fi
+
+			shift
+
+		done
+	fi
 }
-
-MODULE_FOLDER="$MODULES_FOLDER/$MODULE"
-
-if [ ! -d $MODULE_FOLDER ]; then
-	echo "Directory $MODULE_FOLDER doesn't exist"
-	exit 4;
-fi
 
 case $1 in
 	"install")
 		;;
 	"purge")
-		PURGE_FILE="$MODULE_FOLDER/purge.sh"
-		if [ -f $PURGE_FILE ]; then
-			. $PURGE_FILE
-		else
-			echo "File $PURGE_FILE not found"
-			exit 4
-		fi
+		read -n 1 -p "Remove given modules? (y/[a]): " SURE 
+		[ "$SURE" = "y" ] || {
+			echo 
+			exit 0
+		}
+		echo "" 1>&2
+		process $*
 		;;
 	"update")
 		;;
