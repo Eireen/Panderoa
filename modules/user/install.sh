@@ -18,7 +18,7 @@ if [ `id -u` -eq 0 ]; then
         exit 1
     } || {
         CRYPTED_PASS=`mkpasswd $PASSWORD 12`
-        useradd -m -p $CRYPTED_PASS $LOGIN && echo "User $LOGIN has been added to system!" || {
+        useradd -m -p $CRYPTED_PASS $LOGIN && echo "User '$LOGIN' has been successfully added to system!" || {
             echo "Failed to add a user!"
             exit 1
         }

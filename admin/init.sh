@@ -49,19 +49,13 @@ for module in "${!MODULES[@]}"; do
 done
 
 # Вывод результирующего списка установки
-echo "============ INSTALL LIST ============"
+echo "========= INSTALLATION LIST =========="
 for module in "${!MODULES[@]}"; do
 	echo $module = ${MODULES[$module]}
 done
 echo "======================================"
 
-# Спросить у юзера, ставить ли всё это
-read -n 1 -p "Install that modules? (y/[a]): " SURE 
-[ "$SURE" = "y" ] || {
-	echo 
-	exit
-}
-echo "" 1>&2
+confirm "Install these modules? (y/[a]): "
 
 # Установка
 echo "============ INSTALLATION ============"

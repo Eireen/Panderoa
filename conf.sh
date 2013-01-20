@@ -3,12 +3,12 @@
 declare -A MODULES
 
 MODULES=(
-	[user]=false
+	[user]=true
 	[ftp]=false
-	[other]=true
+	[other]=false
 	[mysql]=false
-	[node]=true
-	[nginx]=true
+	[node]=false
+	[nginx]=false
 )
 
 ORDERED_MODULES=(

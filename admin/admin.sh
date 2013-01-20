@@ -4,7 +4,7 @@
 # Параметры: operation module1 [module2 [...]]
 function process() {
 	if [ $# -eq 0 ]; then
-		echo "Function process() must be given at least 2 parameters"
+		echo "Error: function process() requires at least 2 parameters"
 		exit 6
 	fi
 	local operation=$1
@@ -24,8 +24,8 @@ function process() {
 			MODULE_FOLDER="$MODULES_FOLDER/$module"
 
 			if [ ! -d $MODULE_FOLDER ]; then
-			echo "Directory $MODULE_FOLDER doesn't exist"
-			exit 4;
+				echo "Directory $MODULE_FOLDER doesn't exist"
+				exit 4;
 			fi
 
 			OPERATION_FILE="$MODULE_FOLDER/$operation.sh"
@@ -46,12 +46,7 @@ case $1 in
 	"install")
 		;;
 	"purge")
-		read -n 1 -p "Remove given modules? (y/[a]): " SURE 
-		[ "$SURE" = "y" ] || {
-			echo 
-			exit 0
-		}
-		echo "" 1>&2
+		confirm "Remove given modules? (y/[a]): "
 		process $*
 		;;
 	"update")
