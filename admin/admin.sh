@@ -1,12 +1,11 @@
 #!/bin/bash
 
 # Выполнение заданной операции над модулем
-# Параметры: operation module1 [module2 [...]]
+# Параметры: 
+# 1 - operation
+# 2 - module1 [module2 [...]]
 function process() {
-	if [ $# -eq 0 ]; then
-		echo "Error: function process() requires at least 2 parameters"
-		exit 6
-	fi
+	checkNumArgs 1 $# "Error: function process() requires at least 1 argument"
 	local operation=$1
 	if [ $# -eq 1 ]; then
 		# Применить эту операцию ко всем модулям
@@ -21,20 +20,13 @@ function process() {
 				echo "Module $module not found"
 				exit 3
 			}
+			
 			MODULE_FOLDER="$MODULES_FOLDER/$module"
-
-			if [ ! -d $MODULE_FOLDER ]; then
-				echo "Directory $MODULE_FOLDER doesn't exist"
-				exit 4;
-			fi
+			checkDir $MODULE_FOLDER
 
 			OPERATION_FILE="$MODULE_FOLDER/$operation.sh"
-			if [ -f $OPERATION_FILE ]; then
-				. $OPERATION_FILE
-			else
-				echo "File $OPERATION_FILE not found"
-				exit 4
-			fi
+			checkFile $OPERATION_FILE
+			. $OPERATION_FILE
 
 			shift
 

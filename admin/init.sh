@@ -1,28 +1,21 @@
 #!/bin/bash
 
 # Подключение файла зависимостей модуля
-# Параметры: module
+# Параметры: 
+# 1 - module
 function getdeps() {
-	if [ $# -eq 0 ]; then
-		echo "Function getdeps() must be given at least 1 parameter"
-		exit 6
-	fi
+	checkNumArgs 1 $# "Function getdeps() requires at least 1 argument"
 	local module=$1
 	DEPS_FILE="$MODULES_FOLDER/$module/deps.sh"
-	if [ -f $DEPS_FILE ]; then
-		. $DEPS_FILE
-	else
-		DEPS=()
-	fi
+	checkFile $DEPS_FILE
+	. $DEPS_FILE
 }
 
 # Проверка модулей из списка зависимостей
-# Параметры: module
+# Параметры: 
+# 1 - module
 function checkdeps() {
-	if [ $# -eq 0 ]; then
-		echo "Function getdeps() must be given at least 1 parameter"
-		exit 6
-	fi
+	checkNumArgs 1 $# "Function checkdeps() must be given at least 1 argument"
 	local module=$1
 	MODULES[$module]=true
 	getdeps $module
@@ -31,7 +24,7 @@ function checkdeps() {
 			MODULES[$d]=true
 		} || {
 			echo "Module $d from dependencies of $module not found"
-			exit 2
+			exit 1
 		}
 		checkdeps $d
 	done
@@ -50,15 +43,18 @@ done
 
 # Вывод результирующего списка установки
 echo "========= INSTALLATION LIST =========="
+
 for module in "${!MODULES[@]}"; do
 	echo $module = ${MODULES[$module]}
 done
+
 echo "======================================"
 
 confirm "Install these modules? (y/[a]): "
 
 # Установка
 echo "============ INSTALLATION ============"
+
 for module in "${ORDERED_MODULES[@]}"; do
 
 	if [ ${MODULES[$module]} != true ]; then
@@ -68,12 +64,8 @@ for module in "${ORDERED_MODULES[@]}"; do
 	echo " ‒ Installing module $module..."
 
 	INSTALL_FILE="$MODULES_FOLDER/$module/install.sh"
+	checkFile $INSTALL_FILE
 
-	if [ -f $INSTALL_FILE ]; then
-		. $INSTALL_FILE
-	else
-		echo "File $INSTALL_FILE for module $module not found"
-		exit 4
-	fi
+	. $INSTALL_FILE
 
 done

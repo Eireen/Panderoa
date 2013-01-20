@@ -12,44 +12,25 @@ PAND_FOLDER=`pwd`
 ADMIN_FOLDER="$PAND_FOLDER/admin"
 MODULES_FOLDER="$PAND_FOLDER/modules"
 
-if [ ! -d $ADMIN_FOLDER ]; then
-	echo "Directory $ADMIN_FOLDER doesn't exist"
-	exit 4;
-fi
-
-if [ ! -d $MODULES_FOLDER ]; then
-	echo "Directory $MODULES_FOLDER doesn't exist"
-	exit 4;
-fi
+checkDir $ADMIN_FOLDER
+checkDir $MODULES_FOLDER
 
 # Подключение главного файла конфигурации
 MAIN_CONFIG="$PAND_FOLDER/conf.sh"
 
-if [ ! -f $MAIN_CONFIG ]; then
-	echo "File $MAIN_CONFIG not found"
-	exit 4
-fi
+checkFile $MAIN_CONFIG
 
 . $MAIN_CONFIG
-
 
 INIT="$ADMIN_FOLDER/init.sh"
 ADMIN="$ADMIN_FOLDER/admin.sh"
 
 if [ $# -eq 0 ] ; then
 	# Первоначальная настройка сервера
-	if [ -f $INIT ]; then
-		. $INIT
-	else
-		echo "File $INIT not found"
-		exit 5
-	fi
+	checkFile $INIT
+	. $INIT
 else
 	# Администрирование
-	if [ -f $ADMIN ]; then
-		. $ADMIN $*
-	else
-		echo "File $ADMIN not found"
-		exit 5
-	fi
+	checkFile $ADMIN
+	. $ADMIN $*
 fi
