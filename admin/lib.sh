@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Checks required number of arguments
+# Parameters:
 # 1 - required number of arguments
 # 2 - actual number of arguments
 # 3 - error message

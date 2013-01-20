@@ -12,25 +12,25 @@ PAND_FOLDER=`pwd`
 ADMIN_FOLDER="$PAND_FOLDER/admin"
 MODULES_FOLDER="$PAND_FOLDER/modules"
 
-checkDir $ADMIN_FOLDER
-checkDir $MODULES_FOLDER
+checkDir "$ADMIN_FOLDER"
+checkDir "$MODULES_FOLDER"
 
 # Подключение главного файла конфигурации
 MAIN_CONFIG="$PAND_FOLDER/conf.sh"
 
-checkFile $MAIN_CONFIG
+checkFile "$MAIN_CONFIG"
 
-. $MAIN_CONFIG
+. "$MAIN_CONFIG"
 
 INIT="$ADMIN_FOLDER/init.sh"
 ADMIN="$ADMIN_FOLDER/admin.sh"
 
 if [ $# -eq 0 ] ; then
 	# Первоначальная настройка сервера
-	checkFile $INIT
-	. $INIT
+	checkFile "$INIT"
+	. "$INIT"
 else
 	# Администрирование
-	checkFile $ADMIN
-	. $ADMIN $*
+	checkFile "$ADMIN"
+	. "$ADMIN" $*
 fi
