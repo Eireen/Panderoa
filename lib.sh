@@ -72,3 +72,53 @@ function checkFile() {
 		exit 1
 	fi
 }
+
+
+
+# Подключение файла зависимостей модуля
+# Параметры: 
+# 1 - module
+function getdeps() {
+	checkNumArgs 1 $# "Function getdeps() requires at least 1 argument"
+	local module=$1
+	DEPS_FILE="$MODULES_FOLDER/$module/deps.sh"
+	checkFile $DEPS_FILE
+	. $DEPS_FILE
+}
+
+# Рекурсия для checkdeps()
+# Параметры: 
+# 1 - module
+# 2 - check in general list
+function checkdeps_recursion() {
+	checkNumArgs 1 $# "Function checkdeps_recursion() must be given at least 1 argument"
+	local module=$1
+	MODULES[$module]=true
+	getdeps $module
+	for d in "${DEPS[@]}"; do
+		[[ ${!MODULES[@]} =~ $d ]] && {
+			if [[ true != ${MODULES[$d]} ]]; then
+				NEW_LIST[${#NEW_LIST[@]}]=true
+				if [[ $# -gt 1 ]]; then
+					MODULES[$d]=true
+				fi
+			fi
+		} || {
+			echo "Module $d from dependencies of $module not found"
+			exit 1
+		}
+		checkdeps $d
+	done
+}
+
+# Проверка модулей из списка зависимостей
+# Параметры:
+# 1 - module
+# 2 - check in general list
+# Возвращает:
+# NEW_LIST - список недостающих модулей
+function checkdeps() {
+	checkNumArgs 1 $# "Function checkdeps() must be given at least 1 argument"
+	NEW_LIST=()
+	checkdeps_recursion $*
+}

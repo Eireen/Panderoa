@@ -1,13 +1,8 @@
 #!/bin/bash
 
-CONFIG_FILE="$MODULE_FOLDER/conf.sh"
-
-if [ -f $CONFIG_FILE ]; then
-	. $CONFIG_FILE
-else
-	echo "File $CONFIG_FILE not found"
-	exit 4
-fi
+CONFIG_FILE="$MODULES_FOLDER/user/conf.sh"
+checkFile $CONFIG_FILE
+. $CONFIG_FILE
 
 userdel -r $LOGIN
 

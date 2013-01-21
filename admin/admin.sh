@@ -28,6 +28,14 @@ function process() {
 			checkFile $OPERATION_FILE
 			. $OPERATION_FILE
 
+			if [[ "check" = $operation ]]; then
+				if [[ true = $INSTALLED ]]; then
+					echo "Yes, module '$module' is installed"
+				else
+					echo "No, module '$module' is not installed"
+				fi
+			fi
+
 			shift
 
 		done
@@ -36,6 +44,7 @@ function process() {
 
 case $1 in
 	"install")
+		# Проверить и установить зависимости
 		;;
 	"purge")
 		confirm "Remove given modules? (y/[a]): "
@@ -44,6 +53,9 @@ case $1 in
 	"update")
 		;;
 	"upgrade")
+		;;
+	"check")
+		process $*
 		;;
 	* )
 		echo "Invalid parameter: $1"
