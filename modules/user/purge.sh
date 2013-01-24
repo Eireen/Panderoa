@@ -1,9 +1,5 @@
 #!/bin/bash
 
-CONFIG_FILE="$MODULES_FOLDER/user/conf.sh"
-checkFile $CONFIG_FILE
-. $CONFIG_FILE
-
 userdel -r $LOGIN
 
 EXIT_CODE=$?

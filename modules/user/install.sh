@@ -1,9 +1,5 @@
 #!/bin/bash
 
-CONFIG_FILE="$MODULES_FOLDER/user/conf.sh"
-checkFile $CONFIG_FILE
-. $CONFIG_FILE
-
 # Установка необходимых пакетов
 dpkg -s whois >/dev/null 2>&1 || {
     echo "Installing package 'whois'..."
