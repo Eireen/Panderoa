@@ -13,38 +13,133 @@ COMMANDS=(
     "check"
 )
 
-# 1. Проверка прав на выполнение
-function checkUID() {
-    if [[ `id -u` -ne 0 ]]; then
+# Проверка прав на выполнение
+function check_uid() {
+    if [[ $UID -ne 0 ]]; then
         echo "Error: You must be root to run this script!"
         exit 1
     fi
 }
 
-# 2. Проверка целостности проекта
-function checkProjectIntegrity() {
+# Проверка целостности проекта
+function check_project_integrity() {
     # TODO
     :
 }
 
-# 5. Расширение списка модулей зависимостями из deps-файлов
-function extendModulesByDeps() {
-    # TODO
-    :
+# Clear the list of repetitive modules
+function trim_modules() {
+    local i=0
+
+    while [ $i -le ${#MODULES[@]} ]; do
+        local j=0
+
+        while [ $j -le ${#MODULES[@]} ]; do
+            if [ $i -ne $j ] && [[ ${MODULES[$i]} == ${MODULES[$j]} ]]; then
+                local max=0
+
+                if [ $i -gt $j ]; then
+                    max=$i
+                else
+                    max=$j
+                fi
+
+                # Remove a module with the largest index
+                MODULES=( ${MODULES[@]:0:$max} ${MODULES[@]:($max+1)} )
+
+                # Start over
+                i=-1
+                break
+            fi
+            j=$(($j+1))
+        done
+
+        i=$(($i+1))
+    done
+}
+
+# Extend the list of modules on the basis of their dependencies, by adding new modules
+function extend_modules_by_deps() {
+    DEPS_FILE="deps.sh"
+
+    local i=0
+    local j=0
+
+    ADDED_MODULES=()
+
+    while [ $i -lt ${#MODULES[@]} ]; do 
+        local path="$MODULES_DIR/${MODULES[$i]}/$DEPS_FILE"
+
+        if [ -f $path ]; then
+            . $path
+
+            echo "DEPS(${MODULES[$i]}) = ${DEPS[@]}"
+
+            for dep_module in "${DEPS[@]}"; do
+                if [[ $dep_module == ${MODULES[$i]} ]]; then
+                    echo "Warning: invalid dependency, module \"$dep_module\" is pointed at itself!"
+                    continue
+                fi
+
+                # Remove the dependent module after the current one
+                local j=$i
+                while [ $j -le ${#MODULES[@]} ]; do
+                    if [[ $dep_module == ${MODULES[$j]} ]]; then
+                        MODULES=( ${MODULES[@]:0:$j} ${MODULES[@]:($j+1)} )
+                    fi
+                    j=$(($j+1))
+                done
+
+                # Check if the dependent module is found before the current one
+                local is_found_before=0
+                local j=0
+                while [ $j -le $i ]; do
+                    if [[ "$dep_module" = "${MODULES[$j]}" ]]; then
+                        is_found_before=1
+                        break
+                    fi
+                    j=$(($j+1))
+                done
+
+                if [ $is_found_before -ne 1 ]; then
+                    # Insert the dependent module before the current one
+                    MODULES=( ${MODULES[@]:0:$i} "$dep_module" ${MODULES[@]:$i} )
+
+                    ADDED_MODULES[${#ADDED_MODULES[@]}]="$dep_module"
+
+                    # Start over
+                    i=-1
+                    break
+                fi
+            done
+        fi
+
+        i=$(($i+1))
+    done
 }
 
 # 6. Проверка целостности модуля
-function checkModuleIntegrity() {
+# Arguments: 
+# 1 - module
+# Uses:
+#  - MODULES_DIR
+function check_module_integrity() {
     # TODO
-    checkNumArgs 1 $# "Error: function checkModuleIntegrity() requires at least 1 argument"
+    checkNumArgs 1 $# "Error: function check_module_integrity() requires at least 1 argument"
     local module=$1
+
     MODULE_DIR="$MODULES_DIR/$module"
     checkDir $MODULE_DIR
-    # обязательны ли deps.sh и packs.sh?
+
     DEPS_FILE="$MODULE_DIR/$module/deps.sh"
     checkFile $DEPS_FILE
+    # TODO: check if variables DEPS, PACKS, OPTS defined
+
     PACKS_FILE="$MODULE_DIR/$module/packs.sh"
     checkFile $PACKS_FILE
+
+    OPTS_FILE="$MODULE_DIR/$module/opts.sh"
+    checkFile $OPTS_FILE    
 }
 
 # Проверка наличия установленных пакетов
@@ -54,8 +149,8 @@ function checkModuleIntegrity() {
 #  - MODULES_DIR
 # Returns:
 #  - INSTALLED
-function checkInstalledPacks() {
-    checkNumArgs 1 $# "Error: function checkInstalledPacks() requires at least 1 argument"
+function check_installed_packs() {
+    checkNumArgs 1 $# "Error: function check_installed_packs() requires at least 1 argument"
     local module=$1
     PACKS_FILE="$MODULES_DIR/$module/packs.sh"
     . $PACKS_FILE
@@ -74,11 +169,11 @@ function checkInstalledPacks() {
 #  - MODULES_DIR
 # Returns:
 #  - INSTALLED
-function checkInstalledModule() {
-    checkNumArgs 1 $# "Error: function checkInstalledModule() requires at least 1 argument"
+function check_installed_module() {
+    checkNumArgs 1 $# "Error: function check_installed_module() requires at least 1 argument"
     local module=$1
     INSTALLED=true
-    checkInstalledPacks $module
+    check_installed_packs $module
     if [[ INSTALLED ]]; then
         CHECK_FILE="$MODULES_DIR/$module/check.sh"
         if [[ -f $CHECK_FILE ]]; then
@@ -91,7 +186,7 @@ function checkInstalledModule() {
 # Returns:
 #  - SHORT_OPTS
 #  - LONG_OPTS
-function collectOptionsfromFiles() {
+function collect_options_from_files() {
     FILES=`find $MODULES_DIR -wholename "*/opts.sh"`
 
     OLD_IFS=$IFS
@@ -116,7 +211,7 @@ function collectOptionsfromFiles() {
 # 2 - option list (short or long)
 # Returns:
 #  - WITH_ARG - флаг наличия аргумента у опции
-function checkOptionArg() {
+function check_option_arg() {
     WITH_ARG=false
     local opt="$1"
     local optlist="$2"
@@ -137,8 +232,8 @@ function checkOptionArg() {
 #  - COMMAND
 #  - OPTIONS
 #  - MODULES
-function parseInput() {
-    collectOptionsfromFiles
+function parse_input() {
+    collect_options_from_files
 
     PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS},conf: -- "$@"`
     if [[ $? -ne 0 ]]; then
@@ -147,7 +242,7 @@ function parseInput() {
     fi
 
     eval set -- "$PARSED"
-    declare -A OPTIONS
+    declare -Ag OPTIONS
 
     while true; do
         if [[ -- = "$1" ]]; then
@@ -159,11 +254,11 @@ function parseInput() {
         if [[ ${#opt} -eq 2 ]]; then
             # Короткая опция
             opt="${opt:1}"  # остаётся ли opt здесь локальной??
-            checkOptionArg $opt "$SHORT_OPTS"
+            check_option_arg $opt "$SHORT_OPTS"
         else
             # Длинная опция
             opt="${opt:2}"
-            checkOptionArg $opt "$LONG_OPTS"
+            check_option_arg $opt "$LONG_OPTS"
         fi
         if [[ true = "$WITH_ARG" ]]; then
             OPTIONS["$opt"]="$2"
@@ -188,8 +283,8 @@ function parseInput() {
 # "Подключение" скрипта
 # Arguments:
 # 1 - path
-function loadFile() {
-    checkNumArgs 1 $# "Error: function loadFile() requires at least 1 argument"
+function load_file() {
+    checkNumArgs 1 $# "Error: function load_file() requires at least 1 argument"
     local file="$1"
     checkFile "$file"
     . "$file"
@@ -200,12 +295,12 @@ function loadFile() {
 #  - MODULES_DIR
 # Returns:
 #  - ALL_PACKS: [module]="pack1 pack2 ..."
-function getPacksList() {
+function get_all_packs() {
     declare -Ag ALL_PACKS
     OLD_IFS=$IFS
     IFS=`echo -en "\n\b"`
     for module in `ls "$MODULES_DIR"`; do
-        loadFile "$MODULES_DIR/$module/packs.sh"
+        load_file "$MODULES_DIR/$module/packs.sh"
         ALL_PACKS["$module"]="${PACKS[@]}"
     done
     IFS=$OLD_IFS
@@ -217,7 +312,7 @@ function getPacksList() {
 #  - ALL_PACKS
 # Returns:
 #  - USAGES: [pack]="module1/module2/..."
-function checkUsages() {
+function check_usages() {
     declare -Ag USAGES
 
     for module in "${MODULES[@]}"; do
@@ -254,19 +349,19 @@ function checkUsages() {
 #  - MODULES
 #  - OPTIONS
 #  - COMMAND
-function execCommand() {
-    getPacksList
+function exec_command() {
+    get_all_packs
 
     if [[ remove = "$COMMAND" || purge = "$COMMAND" ]]; then
-        checkUsages
+        check_usages
         if [[ ${#USAGES[@]} -gt 0 ]]; then
             # Показать список используемых пакетов
-            echo "These packages associated with removing modules are now being used in other modules and cannot be removed:"
+            echo "These packages associated with removing MODULES are now being used in other MODULES and cannot be removed:"
             for pack in "${!USAGES[@]}"; do
                 echo " - $pack in ${USAGES[$pack]}"
             done
         fi
-        confirm "Remove given modules? (y/[a]): "
+        confirm "Remove given MODULES? (y/[a]): "
     fi
 
     for module in "${MODULES[@]}"; do
