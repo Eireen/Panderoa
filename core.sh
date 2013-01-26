@@ -3,6 +3,7 @@
 MODULES_DIR="/home/eireen/Panderoa/modules"
 
 . ./lib.sh
+. ./module.sh
 
 COMMANDS=(
     "install"
@@ -73,8 +74,6 @@ function extend_modules_by_deps() {
         if [ -f $path ]; then
             . $path
 
-            echo "DEPS(${MODULES[$i]}) = ${DEPS[@]}"
-
             for dep_module in "${DEPS[@]}"; do
                 if [[ $dep_module == ${MODULES[$i]} ]]; then
                     echo "Warning: invalid dependency, module \"$dep_module\" is pointed at itself!"
@@ -125,7 +124,7 @@ function extend_modules_by_deps() {
 #  - MODULES_DIR
 function check_module_integrity() {
     # TODO
-    checkNumArgs 1 $# "Error: function check_module_integrity() requires at least 1 argument"
+    check_num_args 1 $# $FUNCNAME
     local module=$1
 
     MODULE_DIR="$MODULES_DIR/$module"
@@ -150,7 +149,7 @@ function check_module_integrity() {
 # Returns:
 #  - INSTALLED
 function check_installed_packs() {
-    checkNumArgs 1 $# "Error: function check_installed_packs() requires at least 1 argument"
+    check_num_args 1 $# $FUNCNAME
     local module=$1
     PACKS_FILE="$MODULES_DIR/$module/packs.sh"
     . $PACKS_FILE
@@ -170,7 +169,7 @@ function check_installed_packs() {
 # Returns:
 #  - INSTALLED
 function check_installed_module() {
-    checkNumArgs 1 $# "Error: function check_installed_module() requires at least 1 argument"
+    check_num_args 1 $# $FUNCNAME
     local module=$1
     INSTALLED=true
     check_installed_packs $module
@@ -212,6 +211,7 @@ function collect_options_from_files() {
 # Returns:
 #  - WITH_ARG - флаг наличия аргумента у опции
 function check_option_arg() {
+    check_num_args 2 $# $FUNCNAME
     WITH_ARG=false
     local opt="$1"
     local optlist="$2"
@@ -284,7 +284,7 @@ function parse_input() {
 # Arguments:
 # 1 - path
 function load_file() {
-    checkNumArgs 1 $# "Error: function load_file() requires at least 1 argument"
+    check_num_args 1 $# $FUNCNAME
     local file="$1"
     checkFile "$file"
     . "$file"
