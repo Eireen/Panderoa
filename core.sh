@@ -227,17 +227,17 @@ function check_option_arg() {
 }
 
 # (3, 4, 8). Разбор входных данных (команда, опции и модули)
-# TODO: разбор опций нескольких модулей (??)
 # Returns:
 #  - COMMAND
 #  - OPTIONS
 #  - MODULES
 function parse_input() {
     collect_options_from_files
+    LONG_OPTS="${LONG_OPTS},conf:"
 
-    PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS},conf: -- "$@"`
+    PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
     if [[ $? -ne 0 ]]; then
-        echo "getopt error" >&2
+        # TODO: echo "getopt error" >&2
         exit 1
     fi
 

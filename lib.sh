@@ -60,7 +60,7 @@ function check_config() {
 }
 
 # Requires config file
-# Uses: OPTIONS
+# Uses: OPTIONS, MODULES
 function require_conf() {
 	for opt in "${!OPTIONS[@]}"; do
 		if [[ $opt = 'conf' ]]; then
@@ -70,6 +70,12 @@ function require_conf() {
 			break
 		fi
 	done
+
+	# При задании нескольких модулей конфиг обязателен
+	if [[ ${#MODULES[@]} > 1 && -z $CONFIG ]]; then
+		echo "If more than one module - config required"
+		exit 1
+	fi
 }
 
 # Overwrites settings from the config file by options from the console
@@ -78,6 +84,7 @@ function overwrite_options() {
         if [[ $opt = 'conf' ]]; then
             continue
         fi
+        
         VAR="${MODULES[0]}_opts"
     done
 }
