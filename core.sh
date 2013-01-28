@@ -2,17 +2,9 @@
 
 MODULES_DIR="/home/eireen/Panderoa/modules"
 
+. ./commands.sh
 . ./lib.sh
 . ./module.sh
-
-COMMANDS=(
-    "install"
-    "remove"
-    "purge"
-    "update"
-    "upgrade"
-    "check"
-)
 
 # Проверка прав на выполнение
 function check_uid() {
@@ -26,37 +18,6 @@ function check_uid() {
 function check_project_integrity() {
     # TODO
     :
-}
-
-# Clear the list of repetitive modules
-function trim_modules() {
-    local i=0
-
-    while [ $i -le ${#MODULES[@]} ]; do
-        local j=0
-
-        while [ $j -le ${#MODULES[@]} ]; do
-            if [ $i -ne $j ] && [[ ${MODULES[$i]} == ${MODULES[$j]} ]]; then
-                local max=0
-
-                if [ $i -gt $j ]; then
-                    max=$i
-                else
-                    max=$j
-                fi
-
-                # Remove a module with the largest index
-                MODULES=( ${MODULES[@]:0:$max} ${MODULES[@]:($max+1)} )
-
-                # Start over
-                i=-1
-                break
-            fi
-            j=$(($j+1))
-        done
-
-        i=$(($i+1))
-    done
 }
 
 # Extend the list of modules on the basis of their dependencies, by adding new modules
@@ -115,6 +76,8 @@ function extend_modules_by_deps() {
 
         i=$(($i+1))
     done
+    
+    echo_added_modules
 }
 
 # 6. Проверка целостности модуля
@@ -183,8 +146,8 @@ function check_installed_module() {
 
 # Составление списка всех возможных опций
 # Returns:
-#  - SHORT_OPTS
-#  - LONG_OPTS
+#  - ALL_SHORT_OPTS
+#  - ALL_LONG_OPTS
 function collect_options_from_files() {
     FILES=`find $MODULES_DIR -wholename "*/opts.sh"`
 
@@ -193,15 +156,13 @@ function collect_options_from_files() {
 
     for file in $FILES; do
         . "$file"
-        for opt in "${!OPTS[@]}"; do
-            SHORT_OPTS="$SHORT_OPTS$opt"
-            LONG_OPTS="$LONG_OPTS,${OPTS[$opt]}"
-        done
+        ALL_SHORT_OPTS="${ALL_SHORT_OPTS}${SHORT_OPTS}"
+        ALL_LONG_OPTS="${ALL_LONG_OPTS},${LONG_OPTS}"
     done
 
     IFS=$OLD_IFS
 
-    LONG_OPTS=${LONG_OPTS:1}
+    ALL_LONG_OPTS=${ALL_LONG_OPTS:1}
 }
 
 # Проверка наличия аргумента у опции
@@ -233,9 +194,9 @@ function check_option_arg() {
 #  - MODULES
 function parse_input() {
     collect_options_from_files
-    LONG_OPTS="${LONG_OPTS},conf:"
+    ALL_LONG_OPTS="${ALL_LONG_OPTS},conf:"
 
-    PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
+    PARSED=`getopt -o $ALL_SHORT_OPTS -l ${ALL_LONG_OPTS} -- "$@"`
     if [[ $? -ne 0 ]]; then
         # TODO: echo "getopt error" >&2
         exit 1
@@ -254,11 +215,11 @@ function parse_input() {
         if [[ ${#opt} -eq 2 ]]; then
             # Короткая опция
             opt="${opt:1}"  # остаётся ли opt здесь локальной??
-            check_option_arg $opt "$SHORT_OPTS"
+            check_option_arg $opt "$ALL_SHORT_OPTS"
         else
             # Длинная опция
             opt="${opt:2}"
-            check_option_arg $opt "$LONG_OPTS"
+            check_option_arg $opt "$ALL_LONG_OPTS"
         fi
         if [[ true = "$WITH_ARG" ]]; then
             OPTIONS["$opt"]="$2"
@@ -391,5 +352,83 @@ function exec_command() {
             . $SCRIPT_FILE
         fi
 
+    done
+}
+
+# Prepare a list of packages to remove for the specified module
+# $1: module
+function packs_to_remove() {
+    check_num_args 1 $# $FUNCNAME
+
+    require_packs "$1"
+
+    local res_packs="${PACKS[@]}"
+
+    for module in "${MODULES[@]}"; do
+        if [[ $1 != $module ]]; then
+            require_packs "$module"
+
+            local i=0
+            while [[ $i -lt ${#PACKS[@]} ]]; do
+
+                local j=0
+                while [[ $j -lt ${#res_packs[@]} ]]; do
+                    if [[ ${res_packs[$j]} == ${PACKS[$i]} ]]; then
+                        res_packs=( ${res_packs[@]:0:$j} ${res_packs[@]:($j+1)} )
+                    fi
+
+                    j=$((j+1))
+                done
+
+                i=$((i+1))
+            done
+        fi
+    done
+
+    PACKS="${res_packs[@]}"
+}
+
+# Проверка наличия требуемых опций
+# Uses: OPTIONS
+# $1: module
+# $2: options like 'l', 'login', 'l/login'
+function check_required_options() {
+
+    function check_opt() {
+        check_num_args 1 $# $FUNCNAME
+        local req_opt=$1
+        for opt in "${OPTIONS[@]}"; do
+            if [[ $opt = $req_opt ]]; then
+                return 0
+            fi
+        done
+        return 1
+    }
+
+    check_num_args 2 $# $FUNCNAME
+    local error_message="Required option ${opt_forms[0]} not found"
+    local delimiter='='
+    local module=$1
+    shift
+    for req_opt; do
+        if [[ `expr index $req_opt $delimiter` -ne 0 ]]; then
+            local opt_forms=(${req_opt//;/ })
+            local found=false
+            for opt_form in "${opt_forms[@]}"; do
+                if [[ `check_opt $opt_form` -eq 0 ]]; then
+                    found=true
+                fi
+            done
+            if [[ $found = false ]]; then
+                echo error_message
+                exit 1
+            fi
+        else
+            [[check_opt $req_opt ]] || {
+                echo error_message
+                exit 1
+            }
+        fi
+        shift
     done
 }

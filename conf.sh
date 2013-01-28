@@ -1,8 +1,4 @@
 #!/bin/bash
 
-declare -A USER 
-
-USER=(
-	[login]=testuser
-	[password]=testpass
-)
+USER_OPTS[login]=testuser
+USER_OPTS[password]=testpass

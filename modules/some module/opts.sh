@@ -1,9 +1,4 @@
 #!/bin/bash
 
-declare -A OPTS
-
-OPTS=(
-	[o:]=option:
-	[w]=weather
-	[r::]=race::
-)
+SHORT_OPTS='o:wr::'
+LONG_OPTS='option:,weather,race::'

@@ -5,8 +5,8 @@
 . ./lib.sh
 
 if [ `id -u` -ne 0 ]; then
-	echo "Error: You must be root to run this script!"
-	exit 1
+    echo "Error: You must be root to run this script!"
+    exit 1
 fi
 
 # Проверка наличия основных рабочих каталогов
@@ -28,11 +28,11 @@ INIT="$ADMIN_FOLDER/init.sh"
 ADMIN="$ADMIN_FOLDER/admin.sh"
 
 if [ $# -eq 0 ] ; then
-	# Первоначальная настройка сервера
-	checkFile "$INIT"
-	. "$INIT"
+    # Первоначальная настройка сервера
+    checkFile "$INIT"
+    . "$INIT"
 else
-	# Администрирование
-	checkFile "$ADMIN"
-	. "$ADMIN" $*
+    # Администрирование
+    checkFile "$ADMIN"
+    . "$ADMIN" $*
 fi

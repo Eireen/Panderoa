@@ -1,8 +1,4 @@
 #!/bin/bash
 
-declare -A OPTS
-
-OPTS=(
-	[l:]=login:
-	[p:]=password:
-)
+SHORT_OPTS='l:p:'
+LONG_OPTS='login:,password:'

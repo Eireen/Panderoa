@@ -1,5 +1,4 @@
 #!/bin/bash
 
-declare -A OPTS
-
-OPTS=()
+SHORT_OPTS=''
+LONG_OPTS=''
