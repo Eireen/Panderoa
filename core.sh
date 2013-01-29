@@ -2,6 +2,8 @@
 
 MODULES_DIR="/home/eireen/Panderoa/modules"
 
+. ./environment.sh
+. ./modules.sh
 . ./commands.sh
 . ./lib.sh
 . ./module.sh
@@ -90,18 +92,18 @@ function check_module_integrity() {
     check_num_args 1 $# $FUNCNAME
     local module=$1
 
-    MODULE_DIR="$MODULES_DIR/$module"
-    checkDir $MODULE_DIR
+    MODULE_DIR="$MODULES_PATH/$module"
+    check_dir $MODULE_DIR
 
-    DEPS_FILE="$MODULE_DIR/$module/deps.sh"
-    checkFile $DEPS_FILE
     # TODO: check if variables DEPS, PACKS, OPTS defined
+    DEPS_FILE="$MODULE_DIR/deps.sh"
+    check_file $DEPS_FILE
 
-    PACKS_FILE="$MODULE_DIR/$module/packs.sh"
-    checkFile $PACKS_FILE
+    PACKS_FILE="$MODULE_DIR/packs.sh"
+    check_file $PACKS_FILE
 
-    OPTS_FILE="$MODULE_DIR/$module/opts.sh"
-    checkFile $OPTS_FILE    
+    OPTS_FILE="$MODULE_DIR/opts.sh"
+    check_file $OPTS_FILE
 }
 
 # Проверка наличия установленных пакетов
@@ -144,25 +146,42 @@ function check_installed_module() {
     fi
 }
 
-# Составление списка всех возможных опций
-# Returns:
-#  - ALL_SHORT_OPTS
-#  - ALL_LONG_OPTS
-function collect_options_from_files() {
-    FILES=`find $MODULES_DIR -wholename "*/opts.sh"`
-
-    OLD_IFS=$IFS
-    IFS=`echo -en "\n\b"`
-
-    for file in $FILES; do
-        . "$file"
-        ALL_SHORT_OPTS="${ALL_SHORT_OPTS}${SHORT_OPTS}"
-        ALL_LONG_OPTS="${ALL_LONG_OPTS},${LONG_OPTS}"
+# Определение заданных модулей
+function get_modules() {
+    for arg; do
+        local is_standard=false
+        for st_module in "${STANDARD_MODULES[@]}"; do
+            if [[ $arg = $st_module ]]; then
+                is_standard=true
+                break
+            fi
+        done
+        if [[ $is_standard = true ]]; then
+            MODULES[${#MODULES[@]}]=$arg
+        fi
     done
 
-    IFS=$OLD_IFS
+    if [[ ${#MODULES[@]} -eq 0 ]]; then
+        echo "Modules are not specified"
+        exit 1
+    fi
+}
 
-    ALL_LONG_OPTS=${ALL_LONG_OPTS:1}
+# Определение команды, выполняемой над модулями
+function get_command() {
+    for arg; do
+        [[ ${COMMANDS[@]} =~ $arg ]] && {
+            if [[ -z "$COMMAND" ]]; then
+                COMMAND="$arg"
+                break
+            fi
+        }
+    done
+
+    if [[ -z $COMMAND ]]; then
+        echo "Command is not specified!"
+        exit 1
+    fi
 }
 
 # Проверка наличия аргумента у опции
@@ -187,16 +206,14 @@ function check_option_arg() {
     fi
 }
 
-# (3, 4, 8). Разбор входных данных (команда, опции и модули)
-# Returns:
-#  - COMMAND
-#  - OPTIONS
-#  - MODULES
-function parse_input() {
-    collect_options_from_files
-    ALL_LONG_OPTS="${ALL_LONG_OPTS},conf:"
+# Разбор входных данных (команда, опции и модули)
+# Uses: MODULES
+function parse_options() {
+    local module="${MODULES[0]}"
+    require_opts $module
+    LONG_OPTS="$LONG_OPTS,conf:"
 
-    PARSED=`getopt -o $ALL_SHORT_OPTS -l ${ALL_LONG_OPTS} -- "$@"`
+    PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
     if [[ $? -ne 0 ]]; then
         # TODO: echo "getopt error" >&2
         exit 1
@@ -214,12 +231,12 @@ function parse_input() {
         # Должен ли быть аргумент у опции
         if [[ ${#opt} -eq 2 ]]; then
             # Короткая опция
-            opt="${opt:1}"  # остаётся ли opt здесь локальной??
-            check_option_arg $opt "$ALL_SHORT_OPTS"
+            opt="${opt:1}"
+            check_option_arg $opt "$SHORT_OPTS"
         else
             # Длинная опция
             opt="${opt:2}"
-            check_option_arg $opt "$ALL_LONG_OPTS"
+            check_option_arg $opt "$LONG_OPTS"
         fi
         if [[ true = "$WITH_ARG" ]]; then
             OPTIONS["$opt"]="$2"
@@ -230,14 +247,20 @@ function parse_input() {
         fi
     done
 
-    for operand; do
-        [[ ${COMMANDS[*]} =~ $operand ]] && {
-            if [[ -z "$COMMAND" ]]; then
-                COMMAND="$operand"
-                continue
+    for other; do
+        if [[ $other = $COMMAND ]]; then
+            continue
+        fi
+        local is_module=false
+        for module in "${MODULES[@]}"; do
+            if [[ $other = $module ]]; then
+                is_module=true
+                break
             fi
-        }
-        MODULES[${#MODULES[@]}]=$operand
+        done
+        if [[ $is_module = false ]]; then
+            echo "Unknown argument: $other"
+        fi
     done
 }
 
@@ -391,13 +414,13 @@ function packs_to_remove() {
 # Проверка наличия требуемых опций
 # Uses: OPTIONS
 # $1: module
-# $2: options like 'l', 'login', 'l/login'
+# $2: options like 'l', 'login', 'l=login'
 function check_required_options() {
 
     function check_opt() {
         check_num_args 1 $# $FUNCNAME
         local req_opt=$1
-        for opt in "${OPTIONS[@]}"; do
+        for opt in "${module_opts[@]}"; do
             if [[ $opt = $req_opt ]]; then
                 return 0
             fi
@@ -405,30 +428,39 @@ function check_required_options() {
         return 1
     }
 
+    function print_err() {
+        check_num_args 1 $# $FUNCNAME
+        local opt=$1
+        echo "Required option '$opt' not found"
+    }
+
     check_num_args 2 $# $FUNCNAME
     local error_message="Required option ${opt_forms[0]} not found"
     local delimiter='='
     local module=$1
+    get_module_opts_var $module
+    eval local module_opts=("\${!$MODULE_OPTS_VAR[@]}")
     shift
     for req_opt; do
         if [[ `expr index $req_opt $delimiter` -ne 0 ]]; then
-            local opt_forms=(${req_opt//;/ })
+            local opt_forms=(${req_opt//$delimiter/ })
             local found=false
             for opt_form in "${opt_forms[@]}"; do
-                if [[ `check_opt $opt_form` -eq 0 ]]; then
+                check_opt $opt_form
+                if [[ $? -eq 0 ]]; then
                     found=true
                 fi
             done
             if [[ $found = false ]]; then
-                echo error_message
+                print_err $req_opt
                 exit 1
             fi
         else
-            [[check_opt $req_opt ]] || {
-                echo error_message
+            check_opt $req_opt
+            if [[ $? -ne 0 ]]; then
+                print_err $req_opt
                 exit 1
-            }
+            fi
         fi
-        shift
     done
 }

@@ -1,6 +1,5 @@
 #!/bin/bash
 
-. ./environment.sh
 . ./commands.sh
 . ./lib.sh
 

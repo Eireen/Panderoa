@@ -29,7 +29,7 @@ function check_dir() {
     check_num_args 1 $# $FUNCNAME
 
     if [[ ! -d "$1" ]]; then
-        echo "${2-Error: directory \"`pwd`/$1\" does not exist!}"
+        echo "${2-Error: directory \"$1\" does not exist!}"
         exit 1
     fi
 }
@@ -42,7 +42,7 @@ function check_file() {
     check_num_args 1 $# $FUNCNAME
 
     if [[ ! -f "$1" ]]; then
-        echo "${2-Error: file \"`pwd`/$1\" does not exist!}"
+        echo "${2-Error: file \"$1\" does not exist!}"
         exit 1
     fi
 }
@@ -148,16 +148,7 @@ function require_conf() {
 
     # При задании нескольких модулей конфиг обязателен
     if [[ ${#MODULES[@]} > 1 && -z $CONF ]]; then
-        echo "To install more than one module, use the config file."
-        exit 1
-    fi
-}
-
-# Проверка количества заданных модулей
-# Uses: MODULES
-function check_modules_count() {
-    if [[ ${#MODULES[@]} -eq 0 ]]; then
-        echo "Modules are not defined"
+        echo "If you specify more than one module, use the config file."
         exit 1
     fi
 }
@@ -166,30 +157,30 @@ function check_modules_count() {
 # Uses: MODULES
 function declare_options_arrays() {
     for module in "${MODULES[@]}"; do
-        local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
-        VAR="${upcase_module}_OPTS"
-        declare -Ag "$VAR"
+        get_module_opts_var $module
+        declare -Ag "$MODULE_OPTS_VAR"
     done
 }
 
 # Copies elements from OPTIONS to ${MODULE}_OPTS
 # Uses: OPTIONS, MODULES
-function assign_options_array() {
-    local module="$(echo ${MODULES[0]} | tr '[a-z]' '[A-Z]')"
-    VAR="${module}_OPTS"
+function assign_module_opts() {
+    get_module_opts_var ${MODULES[0]}
 
     for opt in "${!OPTIONS[@]}"; do
         if [[ $opt = 'conf' ]]; then
             continue
         fi
-        eval "$VAR[$opt]="${OPTIONS[$opt]}""
+        eval "$MODULE_OPTS_VAR[$opt]="${OPTIONS[$opt]}""
     done
-    eval "declare -p $VAR"
 }
 
 #Uses: ADDED_MODULES
 function echo_added_modules() {
-    echo "Added modules: "
+    if [[ ${#ADDED_MODULES[@]} -eq 0 ]]; then
+        return 0
+    fi
+    echo "Added modules:"
     local module
     for module in "${ADDED_MODULES[@]}"; do
         echo " - $module"
@@ -208,4 +199,11 @@ function check_already_installed() {
     # - проверка с реальными опциями
 }
 
-# function get_module_opts_array_var
+# Имя массива, хранящего опции модуля
+# $1 - module
+function get_module_opts_var() {
+    check_num_args 1 $# $FUNCNAME
+    local module=$1
+    local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
+    MODULE_OPTS_VAR="${upcase_module}_OPTS"
+}
