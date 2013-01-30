@@ -3,8 +3,9 @@
 MODULES_DIR="/home/eireen/Panderoa/modules"
 
 . ./environment.sh
-. ./modules.sh
 . ./commands.sh
+. ./modules.sh
+
 . ./lib.sh
 . ./module.sh
 
@@ -78,32 +79,27 @@ function extend_modules_by_deps() {
 
         i=$(($i+1))
     done
-    
-    echo_added_modules
 }
 
-# 6. Проверка целостности модуля
-# Arguments: 
-# 1 - module
-# Uses:
-#  - MODULES_DIR
+# Проверка целостности модуля
+# $1 - module
+# Uses: MODULES_DIR
 function check_module_integrity() {
-    # TODO
     check_num_args 1 $# $FUNCNAME
     local module=$1
 
     MODULE_DIR="$MODULES_PATH/$module"
     check_dir $MODULE_DIR
 
-    # TODO: check if variables DEPS, PACKS, OPTS defined
-    DEPS_FILE="$MODULE_DIR/deps.sh"
-    check_file $DEPS_FILE
+    # TODO: check if variables DEPS, PACKS, OPTS are defined
+    check_file "$MODULE_DIR/$DEPS_FILE"
+    check_file "$MODULE_DIR/$PACKS_FILE"
+    check_file "$MODULE_DIR/$OPTS_FILE"
 
-    PACKS_FILE="$MODULE_DIR/packs.sh"
-    check_file $PACKS_FILE
-
-    OPTS_FILE="$MODULE_DIR/opts.sh"
-    check_file $OPTS_FILE
+    for command in "${COMMANDS[@]}"; do
+        COMMAND_FILE="$MODULE_DIR/$command.$SHELL_EXTENSION"
+        check_file $COMMAND_FILE
+    done
 }
 
 # Проверка наличия установленных пакетов
@@ -464,3 +460,26 @@ function check_required_options() {
         fi
     done
 }
+
+# Проверить, какие из добавленных модулей уже установлены и удалить их из списка
+function check_already_installed() {
+    declare -A CHECKS
+    for module in "${MODULES[@]}"; do
+        INSTALLED=false
+        cheek_module $module
+        CHECKS[$module]=$INSTALLED
+    done
+    for module in "${MODULES[@]}"; do
+        INSTALLED=false
+        check_module $module
+        if [[ $INSTALLED = true && ${CHECKS[$module]} = true ]]; then
+            echo "Module $module is already installed"
+            remove_from_list $module
+        fi
+        if [[ $INSTALLED = false && ${CHECKS[$module]} = true ]]; then
+            echo "Module $module is already installed, but with different parameters"
+            exit 1
+        fi
+    done
+}
+

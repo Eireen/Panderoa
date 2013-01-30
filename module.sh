@@ -1,8 +1,5 @@
 #!/bin/bash
 
-. ./commands.sh
-. ./lib.sh
-
 # $1: module
 # $2: file
 function require_module_file() {
@@ -188,6 +185,17 @@ function check_module() {
     check_num_args 1 $# $FUNCNAME
 
     execute_module_command $1 "check"
+
+    if [[ 0 -ne $? ]]; then
+        return 2
+    fi
+}
+
+# $1: module
+function cheek_module() {
+    check_num_args 1 $# $FUNCNAME
+
+    execute_module_command $1 "cheek"
 
     if [[ 0 -ne $? ]]; then
         return 2

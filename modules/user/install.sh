@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "Installling 'user'"
+
+if [[ 2 -gt 5 ]]; then
+
 # Установка необходимых пакетов
 dpkg -s whois >/dev/null 2>&1 || {
     echo "Installing package 'whois'..."
@@ -20,3 +24,6 @@ egrep "^$LOGIN" /etc/passwd >/dev/null && {
         exit 1
     }
 }
+
+fi
+

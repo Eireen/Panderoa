@@ -2,13 +2,16 @@
 
 . ./core.sh
 
-# sudo ./main.sh user -l someuser -p testpass --conf conf.sh
-
 # Проверка прав на выполнение
 check_uid
 
 # Проверка целостности проекта
 check_project_integrity
+
+# Проверка целостности всех модулей
+for module in "${STANDARD_MODULES[@]}"; do
+    check_module_integrity $module
+done
 
 # Команда
 get_command $*
@@ -25,10 +28,7 @@ clear_from_repetitives MODULES
 # Расширение списка модулей зависимостями из deps-файлов
 extend_modules_by_deps
 
-# Проверка целостности модулей
-for module in "${MODULES[@]}"; do
-    check_module_integrity $module
-done
+echo_added_modules
 
 # Объявления массивов опций для модулей
 declare_options_arrays
@@ -37,24 +37,16 @@ declare_options_arrays
 require_conf
 
 # Опции, заданные параллельно с конфигом, игнорируются
-if [[ ${#MODULES[@]} -eq 1 ]]; then
-    if [[ -z $CONF ]]; then
-        assign_module_opts
-    else
-        if [[ ${#OPTIONS[@]} -gt 0 ]]; then
-            echo "Warning: If you specify a config file, options in the console are ignored."
-            # TODO: confirm??
-        fi
-    fi
+if [[ ! -z $CONF ]]; then
+    check_redundant_options
 fi
 
-# ----------------------
-
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-check_already_installed
+if [[ $COMMAND = 'install' ]]; then
+    check_already_installed
+fi
 
-
-
-#declare -p OPTIONS
-#declare -p MODULES
-#declare -p ADDED_MODULES
+# Собственно выполнение команды над модулями
+for module in "${MODULES[@]}"; do
+    execute_module_command $module $COMMAND
+done

@@ -145,12 +145,6 @@ function require_conf() {
             break
         fi
     done
-
-    # При задании нескольких модулей конфиг обязателен
-    if [[ ${#MODULES[@]} > 1 && -z $CONF ]]; then
-        echo "If you specify more than one module, use the config file."
-        exit 1
-    fi
 }
 
 # Объявления массивов опций для модулей
@@ -166,16 +160,17 @@ function declare_options_arrays() {
 # Uses: OPTIONS, MODULES
 function assign_module_opts() {
     get_module_opts_var ${MODULES[0]}
-
     for opt in "${!OPTIONS[@]}"; do
         if [[ $opt = 'conf' ]]; then
             continue
         fi
         eval "$MODULE_OPTS_VAR[$opt]="${OPTIONS[$opt]}""
+
     done
 }
 
-#Uses: ADDED_MODULES
+# Prints list of added modules
+# Uses: ADDED_MODULES
 function echo_added_modules() {
     if [[ ${#ADDED_MODULES[@]} -eq 0 ]]; then
         return 0
@@ -187,18 +182,6 @@ function echo_added_modules() {
     done
 }
 
-# Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-function check_already_installed() {
-    declare -A CHECKS
-    # - проверка с "пустыми" опциями
-    for module in "${ADDED_MODULES}"; do
-        local options_array_var="${module}_OPTS"
-        check_module $module
-        CHECKS["$module"]=$INSTALLED
-    done
-    # - проверка с реальными опциями
-}
-
 # Имя массива, хранящего опции модуля
 # $1 - module
 function get_module_opts_var() {
@@ -206,4 +189,24 @@ function get_module_opts_var() {
     local module=$1
     local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
     MODULE_OPTS_VAR="${upcase_module}_OPTS"
+}
+
+# Uses: OPTIONS
+function check_redundant_options() {
+    if [[ ${#OPTIONS[@]} -gt 1 ]]; then
+        echo "Warning: If you specify a config file, options in the console are ignored."
+    fi
+}
+
+# $1 - module
+# Uses: MODULES
+function remove_from_list() {
+    check_num_args 1 $# $FUNCNAME
+    local module=$1
+    for i in "${!MODULES[@]}"; do
+        if [[ ${MODULES[$i]} = $module ]]; then
+            unset MODULES[$i]
+            break
+        fi
+    done
 }

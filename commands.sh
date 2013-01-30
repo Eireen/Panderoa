@@ -7,4 +7,5 @@ COMMANDS=(
     update
     upgrade
     check
+    cheek
 )
