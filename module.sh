@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# $1: module
-# $2: file
+# $1 - module
+# $2 - file
 function require_module_file() {
     check_num_args 2 $# $FUNCNAME
 
@@ -28,8 +28,8 @@ function require_module_file() {
     fi
 }
 
-# $1: module
-# $2: command
+# $1 - module
+# $2 - command
 function execute_module_command() {
     check_num_args 2 $# $FUNCNAME
 
@@ -45,7 +45,7 @@ function execute_module_command() {
     fi
 }
 
-# $1: command
+# $1 - command
 function perform_at_packs {
     check_num_args 1 $# $FUNCNAME
 
@@ -78,7 +78,7 @@ function upgrade_packs() {
 }
 
 # Determines whether the packages of specified module are installed
-# $1: module
+# $1 - module
 function check_installed_packs() {
     check_num_args 1 $# $FUNCNAME
 
@@ -92,7 +92,7 @@ function check_installed_packs() {
     done
 }
 
-# $1: module
+# $1 - module
 function require_deps() {
     check_num_args 1 $# $FUNCNAME
 
@@ -103,7 +103,7 @@ function require_deps() {
     fi
 }
 
-# $1: module
+# $1 - module
 function require_packs() {
     check_num_args 1 $# $FUNCNAME
 
@@ -114,7 +114,7 @@ function require_packs() {
     fi
 }
 
-# $1: module
+# $1 - module
 function require_opts() {
     check_num_args 1 $# $FUNCNAME
 
@@ -125,7 +125,7 @@ function require_opts() {
     fi
 }
 
-# $1: module
+# $1 - module
 function install_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -136,7 +136,7 @@ function install_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function remove_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -147,7 +147,7 @@ function remove_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function purge_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -158,7 +158,7 @@ function purge_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function update_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -169,7 +169,7 @@ function update_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function upgrade_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -180,7 +180,7 @@ function upgrade_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function check_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -191,7 +191,7 @@ function check_module() {
     fi
 }
 
-# $1: module
+# $1 - module
 function cheek_module() {
     check_num_args 1 $# $FUNCNAME
 

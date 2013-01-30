@@ -24,16 +24,15 @@ function check_project_integrity() {
 }
 
 # Extend the list of modules on the basis of their dependencies, by adding new modules
+# Uses: MODULES
 function extend_modules_by_deps() {
-    DEPS_FILE="deps.sh"
-
     local i=0
     local j=0
 
     ADDED_MODULES=()
 
     while [ $i -lt ${#MODULES[@]} ]; do 
-        local path="$MODULES_DIR/${MODULES[$i]}/$DEPS_FILE"
+        local path="$MODULES_PATH/${MODULES[$i]}/$DEPS_FILE"
 
         if [ -f $path ]; then
             . $path
@@ -83,63 +82,22 @@ function extend_modules_by_deps() {
 
 # Проверка целостности модуля
 # $1 - module
-# Uses: MODULES_DIR
+# Uses: MODULES_PATH, DEPS_FILE, PACKS_FILE, OPTS_FILE, COMMANDS, SHELL_EXTENSION
 function check_module_integrity() {
     check_num_args 1 $# $FUNCNAME
     local module=$1
 
-    MODULE_DIR="$MODULES_PATH/$module"
-    check_dir $MODULE_DIR
+    local module_dir="$MODULES_PATH/$module"
+    check_dir $module_dir
 
-    # TODO: check if variables DEPS, PACKS, OPTS are defined
-    check_file "$MODULE_DIR/$DEPS_FILE"
-    check_file "$MODULE_DIR/$PACKS_FILE"
-    check_file "$MODULE_DIR/$OPTS_FILE"
+    check_file "$module_dir/$DEPS_FILE"
+    check_file "$module_dir/$PACKS_FILE"
+    check_file "$module_dir/$OPTS_FILE"
 
     for command in "${COMMANDS[@]}"; do
-        COMMAND_FILE="$MODULE_DIR/$command.$SHELL_EXTENSION"
-        check_file $COMMAND_FILE
+        local command_file="$module_dir/$command.$SHELL_EXTENSION"
+        check_file $command_file
     done
-}
-
-# Проверка наличия установленных пакетов
-# Arguments:
-# 1 - module
-# Uses:
-#  - MODULES_DIR
-# Returns:
-#  - INSTALLED
-function check_installed_packs() {
-    check_num_args 1 $# $FUNCNAME
-    local module=$1
-    PACKS_FILE="$MODULES_DIR/$module/packs.sh"
-    . $PACKS_FILE
-    for pack in "${PACKS[*]}"; do
-        dpkg -s $pack > /dev/null 2>&1 || {
-            INSTALLED=false
-            break
-        }
-    done
-}
-
-# 7. Проверка наличия установленного модуля
-# Arguments:
-# 1 - module
-# Uses:
-#  - MODULES_DIR
-# Returns:
-#  - INSTALLED
-function check_installed_module() {
-    check_num_args 1 $# $FUNCNAME
-    local module=$1
-    INSTALLED=true
-    check_installed_packs $module
-    if [[ INSTALLED ]]; then
-        CHECK_FILE="$MODULES_DIR/$module/check.sh"
-        if [[ -f $CHECK_FILE ]]; then
-            . $CHECK_FILE
-        fi
-    fi
 }
 
 # Определение заданных модулей
@@ -181,11 +139,8 @@ function get_command() {
 }
 
 # Проверка наличия аргумента у опции
-# Arguments:
-# 1 - option
-# 2 - option list (short or long)
-# Returns:
-#  - WITH_ARG - флаг наличия аргумента у опции
+# $1 - option
+# $2 - option list (short or long)
 function check_option_arg() {
     check_num_args 2 $# $FUNCNAME
     WITH_ARG=false
@@ -203,7 +158,6 @@ function check_option_arg() {
 }
 
 # Разбор входных данных (команда, опции и модули)
-# Uses: MODULES
 function parse_options() {
     local module="${MODULES[0]}"
     require_opts $module
@@ -257,120 +211,6 @@ function parse_options() {
         if [[ $is_module = false ]]; then
             echo "Unknown argument: $other"
         fi
-    done
-}
-
-# "Подключение" скрипта
-# Arguments:
-# 1 - path
-function load_file() {
-    check_num_args 1 $# $FUNCNAME
-    local file="$1"
-    checkFile "$file"
-    . "$file"
-}
-
-# Массив списков пакетов для всех модулей
-# Uses:
-#  - MODULES_DIR
-# Returns:
-#  - ALL_PACKS: [module]="pack1 pack2 ..."
-function get_all_packs() {
-    declare -Ag ALL_PACKS
-    OLD_IFS=$IFS
-    IFS=`echo -en "\n\b"`
-    for module in `ls "$MODULES_DIR"`; do
-        load_file "$MODULES_DIR/$module/packs.sh"
-        ALL_PACKS["$module"]="${PACKS[@]}"
-    done
-    IFS=$OLD_IFS
-}
-
-# Проверка использования пакетов удаляемых модулей другими модулями
-# Uses:
-#  - MODULES
-#  - ALL_PACKS
-# Returns:
-#  - USAGES: [pack]="module1/module2/..."
-function check_usages() {
-    declare -Ag USAGES
-
-    for module in "${MODULES[@]}"; do
-        [[ ${!ALL_PACKS[@]} =~ $module ]] || {
-            # TODO: Нет файла пакетов - выдавать ли ошибку?
-            continue
-        }
-
-        PACKS="${ALL_PACKS[$module]}"
-
-        for pack in ${PACKS[@]}; do
-            for m in "${!ALL_PACKS[@]}"; do
-                [[ ${MODULES[@]} =~ $m ]] && {
-                    continue
-                }
-                for p in ${ALL_PACKS[$m]}; do
-                    if [[ "$pack" = "$p" ]]; then
-                        USAGES["$pack"]="${USAGES[$pack]}, $m"
-                    fi
-                done
-            done
-            # Убрать лишние ', ' в начале
-            [[ ${!USAGES[@]} =~ $pack ]] && {
-                USAGES["$pack"]=${USAGES["$pack"]:2}
-            }
-        done
-
-    done
-}
-
-# 9. Выполнить apt-get <command> с подстановкой параметров для каждого модуля на основе packs.sh
-# Uses:
-#  - MODULES_DIR
-#  - MODULES
-#  - OPTIONS
-#  - COMMAND
-function exec_command() {
-    get_all_packs
-
-    if [[ remove = "$COMMAND" || purge = "$COMMAND" ]]; then
-        check_usages
-        if [[ ${#USAGES[@]} -gt 0 ]]; then
-            # Показать список используемых пакетов
-            echo "These packages associated with removing MODULES are now being used in other MODULES and cannot be removed:"
-            for pack in "${!USAGES[@]}"; do
-                echo " - $pack in ${USAGES[$pack]}"
-            done
-        fi
-        confirm "Remove given MODULES? (y/[a]): "
-    fi
-
-    for module in "${MODULES[@]}"; do
-
-        # Выполнение команды над пакетами
-        [[ ${!ALL_PACKS[@]} =~ $module ]] || {
-            # TODO: Нет файла пакетов - выдавать ли ошибку?
-            continue
-        }
-        PACKS="${ALL_PACKS[$module]}"
-        for pack in ${PACKS[*]}; do
-            if [[ remove = "$COMMAND" || purge = "$COMMAND" ]]; then
-                [[ ${USAGE[@]} =~ $pack ]] && {
-                    continue
-                }
-            fi
-            echo "apt-get $COMMAND $pack"
-            apt-get $COMMAND $pack || {
-                echo "Error when installing the package"
-                exit 1
-            }
-        done
-
-        # Additional scripts
-        SCRIPT_FILE="$MODULES_DIR/$module/$COMMAND.sh"
-        if [[ -f $SCRIPT_FILE ]]; then
-            . $SCRIPT_FILE
-        fi
-
     done
 }
 

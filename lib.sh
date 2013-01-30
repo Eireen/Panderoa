@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Determines whether the number of arguments a function requires
-# $1: required number of arguments
-# $2: actual number of arguments
-# $3: function name
+# $1 - required number of arguments
+# $2 - actual number of arguments
+# $3 - function name
 function check_num_args() {
 
     function print_message() {
@@ -22,8 +22,8 @@ function check_num_args() {
 }
 
 # Determines whether the specified path refers to an existing directory
-# $1: the path to test
-# $2: the error message
+# $1 - the path to test
+# $2 - the error message
 # exit code: 0 if path refers to an existing directory; otherwise, 1
 function check_dir() {
     check_num_args 1 $# $FUNCNAME
@@ -35,8 +35,8 @@ function check_dir() {
 }
 
 # Determines whether the specified path refers to an existing file
-# $1: the path to test
-# $2: the error message
+# $1 - the path to test
+# $2 - the error message
 # exit code: 0 if path refers to an existing file; otherwise, 1
 function check_file() {
     check_num_args 1 $# $FUNCNAME
@@ -48,8 +48,8 @@ function check_file() {
 }
 
 # Determines whether the specified object exists as an element in an Array object
-# $1: the array to search
-# $2: the object to find in the array
+# $1 - the array to search
+# $2 - the object to find in the array
 # return: 0 if the specified object exists as an element in the array; otherwise, 1
 function contains() {
     check_num_args 2 $# $FUNCNAME
