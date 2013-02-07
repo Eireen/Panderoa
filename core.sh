@@ -163,13 +163,13 @@ function parse_options() {
     require_opts $module
     LONG_OPTS="$LONG_OPTS,conf:"
 
-    PARSED=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
+    local parsed=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
     if [[ $? -ne 0 ]]; then
         # TODO: echo "getopt error" >&2
         exit 1
     fi
 
-    eval set -- "$PARSED"
+    eval set -- "$parsed"
     declare -Ag OPTIONS
 
     while true; do
@@ -212,6 +212,8 @@ function parse_options() {
             echo "Unknown argument: $other"
         fi
     done
+
+    
 }
 
 # Prepare a list of packages to remove for the specified module
@@ -271,7 +273,6 @@ function check_required_options() {
     }
 
     check_num_args 2 $# $FUNCNAME
-    local error_message="Required option ${opt_forms[0]} not found"
     local delimiter='='
     local module=$1
     get_module_opts_var $module

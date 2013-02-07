@@ -1,29 +1,32 @@
 #!/bin/bash
 
-echo "Installling 'user'"
+require_packs 'user'
 
-if [[ 2 -gt 5 ]]; then
+install_packs
 
-# Установка необходимых пакетов
-dpkg -s whois >/dev/null 2>&1 || {
-    echo "Installing package 'whois'..."
-    apt-get install -y whois || {
-        echo "Failed to install package 'whois'. Exit."
-        exit 1
-    }
+# TODO: DRY
+[[ ${!USER_OPTS[@]} =~ 'login' ]] && {
+    local login=${USER_OPTS['login']}
+} || {
+    local login=${USER_OPTS['l']}
+}
+
+[[ ${!USER_OPTS[@]} =~ 'password' ]] && {
+    local password=${USER_OPTS['password']}
+} || {
+    local password=${USER_OPTS['p']}
 }
 
 # Script to add a user to Linux system
-egrep "^$LOGIN" /etc/passwd >/dev/null && {
-    echo "User $LOGIN already exists!"
+egrep "^$login" /etc/passwd >/dev/null && {
+    echo "User '$login' already exists!"
     exit 1
 } || {
-    CRYPTED_PASS=`mkpasswd $PASSWORD 12`
-    useradd -m -p $CRYPTED_PASS $LOGIN && echo "User '$LOGIN' has been successfully added to system!" || {
+    local crypted_pass=`mkpasswd $password 12`
+    useradd -m -p $crypted_pass $login && echo "User '$login' has been successfully added to system!" || {
         echo "Failed to add a user!"
         exit 1
     }
 }
 
-fi
 

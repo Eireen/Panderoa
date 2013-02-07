@@ -1,5 +1,3 @@
 #!/bin/bash
 
-PACKS=(
-	whois
-)
+PACKS=(	whois )

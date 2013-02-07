@@ -25,13 +25,19 @@ parse_options $*
 # Очистка списка модулей от повторяющихся элементов
 clear_from_repetitives MODULES
 
-# Расширение списка модулей зависимостями из deps-файлов
-extend_modules_by_deps
+COMMANDS_FOR_ADDING=( 'install' )
 
-echo_added_modules
+# Расширение списка модулей зависимостями из deps-файлов
+if [[ ${COMMANDS_FOR_ADDING[@]} =~ $COMMAND ]]; then
+    extend_modules_by_deps
+    echo_added_modules
+fi  
 
 # Объявления массивов опций для модулей
 declare_options_arrays
+
+# Записать опции в переменную, используемую в скриптах модуля
+assign_module_opts
 
 # Подключить конфиг (если задан)
 require_conf
@@ -50,3 +56,7 @@ fi
 for module in "${MODULES[@]}"; do
     execute_module_command $module $COMMAND
 done
+
+if [[ $COMMAND = 'check' || $COMMAND = 'cheek' ]]; then
+    echo_installed
+fi

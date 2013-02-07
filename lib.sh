@@ -145,6 +145,10 @@ function require_conf() {
             break
         fi
     done
+    if [[ ${#MODULES[@]} > 1 && -z $CONF ]]; then
+        echo "If you specify more than one module, config is required."
+        exit 1
+    fi
 }
 
 # Объявления массивов опций для модулей
@@ -165,7 +169,6 @@ function assign_module_opts() {
             continue
         fi
         eval "$MODULE_OPTS_VAR[$opt]="${OPTIONS[$opt]}""
-
     done
 }
 
@@ -175,7 +178,7 @@ function echo_added_modules() {
     if [[ ${#ADDED_MODULES[@]} -eq 0 ]]; then
         return 0
     fi
-    echo "Added modules:"
+    echo "Dependencies:"
     local module
     for module in "${ADDED_MODULES[@]}"; do
         echo " - $module"
@@ -209,4 +212,13 @@ function remove_from_list() {
             break
         fi
     done
+}
+
+# Uses: INSTALLED
+function echo_installed() {
+    if [[ $INSTALLED = true ]]; then
+        echo "The 'user' module is installed"
+    else
+        echo "The 'user' module is not installed"
+    fi
 }

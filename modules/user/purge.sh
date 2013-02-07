@@ -1,13 +1,19 @@
 #!/bin/bash
 
-userdel -r $LOGIN
+[[ ${!USER_OPTS[@]} =~ 'login' ]] && {
+    local login=${USER_OPTS['login']}
+} || {
+    local login=${USER_OPTS['l']}
+}
 
-EXIT_CODE=$?
+userdel -r $login
 
-if [ $EXIT_CODE -eq 0 ]; then
-	echo "User $LOGIN was successfully removed from system."
-	exit $EXIT_CODE
+local exit_code=$?
+
+if [ $exit_code -eq 0 ]; then
+	echo "User $login was successfully removed from system."
+	exit $exit_code
 else
 	echo "Failed to remove a user!"
-	exit $EXIT_CODE
+	exit $exit_code
 fi

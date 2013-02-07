@@ -1,3 +1,5 @@
 #!/bin/bash
 
-INSTALLED=false
+check_installed_packs 'user'
+
+# Must we check login??

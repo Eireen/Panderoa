@@ -84,6 +84,7 @@ function check_installed_packs() {
 
     require_packs $1
 
+    INSTALLED=true
     for pack in "${PACKS[@]}"; do
         dpkg -s $pack > /dev/null 2>&1 || {
             INSTALLED=false
