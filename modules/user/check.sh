@@ -2,7 +2,7 @@
 
 check_installed_packs 'user'
 
-if [[ $INSTALLED = false ]]; then
+if [[ $USER_INSTALLED = false ]]; then
 	echo_installed
 	exit
 fi
@@ -18,5 +18,5 @@ check_required_options USER "${req_opts[@]}"
 }
 
 egrep "^$login" /etc/passwd > /dev/null || {
-	INSTALLED=false
+	USER_INSTALLED=false
 }

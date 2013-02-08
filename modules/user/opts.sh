@@ -1,4 +1,4 @@
 #!/bin/bash
 
-SHORT_OPTS='l:p:'
-LONG_OPTS='login:,password:'
+SHORT_OPTS='l:p:s'
+LONG_OPTS='login:,password:,sudoer'

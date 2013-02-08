@@ -81,15 +81,23 @@ function upgrade_packs() {
 # $1 - module
 function check_installed_packs() {
     check_num_args 1 $# $FUNCNAME
+    local module=$1
 
-    require_packs $1
+    require_packs $module
 
-    INSTALLED=true
+    get_module_installed_var $module
+    eval "$MODULE_VAR=true"
     for pack in "${PACKS[@]}"; do
-        dpkg -s $pack > /dev/null 2>&1 || {
-            INSTALLED=false
-            break
-        }
+        local result=`aptitude search "^$pack$"` # TODO: too slow; maybe use dpkg
+        if [[ $? -ne 0 ]]; then
+            eval "${MODULE_VAR}=false"
+            return
+        fi
+        local state=${result:0:1}
+        if [[ $state = 'p' || $state = 'c' ]]; then
+            eval "${MODULE_VAR}=false"
+            return
+        fi
     done
 }
 

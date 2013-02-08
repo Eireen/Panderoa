@@ -1,6 +1,7 @@
 #!/bin/bash
 
 MODULES_DIR="/home/eireen/Panderoa/modules"
+declare -A OPTIONS
 
 . ./environment.sh
 . ./commands.sh
@@ -170,7 +171,6 @@ function parse_options() {
     fi
 
     eval set -- "$parsed"
-    declare -Ag OPTIONS
 
     while true; do
         if [[ -- = "$1" ]]; then
@@ -276,7 +276,7 @@ function check_required_options() {
     local delimiter='='
     local module=$1
     get_module_opts_var $module
-    eval local module_opts=("\${!$MODULE_OPTS_VAR[@]}")
+    eval local module_opts=("\${!$MODULE_VAR[@]}")
     shift
     for req_opt; do
         if [[ `expr index $req_opt $delimiter` -ne 0 ]]; then
@@ -306,18 +306,20 @@ function check_required_options() {
 function check_already_installed() {
     declare -A CHECKS
     for module in "${MODULES[@]}"; do
-        INSTALLED=false
+        get_module_installed_var $module
+        eval "$MODULE_VAR=false"
         cheek_module $module
-        CHECKS[$module]=$INSTALLED
+        eval "CHECKS[$module]=\$$MODULE_VAR"
     done
     for module in "${MODULES[@]}"; do
-        INSTALLED=false
+        eval "$MODULE_VAR=false"
         check_module $module
-        if [[ $INSTALLED = true && ${CHECKS[$module]} = true ]]; then
+        eval "local installed=\$$MODULE_VAR"
+        if [[ $installed = true && ${CHECKS[$module]} = true ]]; then
             echo "Module $module is already installed"
             remove_from_list $module
         fi
-        if [[ $INSTALLED = false && ${CHECKS[$module]} = true ]]; then
+        if [[ $installed = false && ${CHECKS[$module]} = true ]]; then
             echo "Module $module is already installed, but with different parameters"
             exit 1
         fi

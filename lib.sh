@@ -123,7 +123,7 @@ function clear_from_repetitives() {
 # $2 - message printing if not sure
 function confirm() {
     check_num_args 1 $# $FUNCNAME
-    read -n 1 -p "$1" SURE
+    read -n 1 -p "$1 (y/[a])" SURE
     [[ "$SURE" = y ]] || {
         echo
         if [[ $# -gt 1 ]]; then
@@ -153,12 +153,12 @@ function require_conf() {
 
 # Объявления массивов опций для модулей
 # Uses: MODULES
-function declare_options_arrays() {
+: 'function declare_options_arrays() {
     for module in "${MODULES[@]}"; do
         get_module_opts_var $module
-        declare -Ag "$MODULE_OPTS_VAR"
+        declare -Ag "$MODULE_VAR"
     done
-}
+}'
 
 # Copies elements from OPTIONS to ${MODULE}_OPTS
 # Uses: OPTIONS, MODULES
@@ -168,7 +168,7 @@ function assign_module_opts() {
         if [[ $opt = 'conf' ]]; then
             continue
         fi
-        eval "$MODULE_OPTS_VAR[$opt]="${OPTIONS[$opt]}""
+        eval "$MODULE_VAR[$opt]="${OPTIONS[$opt]}""
     done
 }
 
@@ -178,20 +178,36 @@ function echo_added_modules() {
     if [[ ${#ADDED_MODULES[@]} -eq 0 ]]; then
         return 0
     fi
-    echo "Dependencies:"
+    echo "Added dependencies:"
     local module
     for module in "${ADDED_MODULES[@]}"; do
         echo " - $module"
     done
 }
 
+# Имя переменной модуля
+# $1 - module
+# $2 - variable name
+function get_module_var() {
+    check_num_args 2 $# $FUNCNAME
+    local module=$1
+    local var_name=$2
+    local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
+    MODULE_VAR="${upcase_module}_${var_name}"
+}
+
 # Имя массива, хранящего опции модуля
 # $1 - module
 function get_module_opts_var() {
     check_num_args 1 $# $FUNCNAME
-    local module=$1
-    local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
-    MODULE_OPTS_VAR="${upcase_module}_OPTS"
+    get_module_var $1 'OPTS'
+}
+
+# Имя переменной, хранящей индикатор установки модуля
+# $1 - module
+function get_module_installed_var() {
+    check_num_args 1 $# $FUNCNAME
+    get_module_var $1 'INSTALLED'
 }
 
 # Uses: OPTIONS
@@ -201,6 +217,7 @@ function check_redundant_options() {
     fi
 }
 
+# Removes module from module list
 # $1 - module
 # Uses: MODULES
 function remove_from_list() {
@@ -214,11 +231,15 @@ function remove_from_list() {
     done
 }
 
-# Uses: INSTALLED
+# Uses: MODULES
 function echo_installed() {
-    if [[ $INSTALLED = true ]]; then
-        echo "The 'user' module is installed"
-    else
-        echo "The 'user' module is not installed"
-    fi
+    for module in "${MODULES[@]}"; do
+        get_module_installed_var $module
+        eval "local installed=\$$MODULE_VAR"
+        if [[ $installed = true ]]; then
+            echo "The '$module' module is installed"
+        else
+            echo "The '$module' module is not installed"
+        fi
+    done
 }

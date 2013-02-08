@@ -31,10 +31,16 @@ COMMANDS_FOR_ADDING=( 'install' )
 if [[ ${COMMANDS_FOR_ADDING[@]} =~ $COMMAND ]]; then
     extend_modules_by_deps
     echo_added_modules
+    if [[ ${#ADDED_MODULES[@]} -gt 0 ]]; then
+        confirm "Are you sure you want to continue?" "Installation was cancelled by user."
+    fi
 fi  
 
 # Объявления массивов опций для модулей
-declare_options_arrays
+for module in "${MODULES[@]}"; do
+    get_module_opts_var $module
+    declare -A "$MODULE_VAR"
+done
 
 # Записать опции в переменную, используемую в скриптах модуля
 assign_module_opts
