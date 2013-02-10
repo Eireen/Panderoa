@@ -54,8 +54,20 @@ if [[ ! -z $CONF ]]; then
 fi
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-if [[ $COMMAND = 'install' ]]; then
+if [[ $COMMAND = 'install' || $COMMAND = 'remove' || $COMMAND = 'purge' ]]; then
     check_already_installed
+    if [[ ${#MODULES[@]} -eq 0 ]]; then
+        exit
+    fi
+    if [[ $COMMAND = 'install' ]]; then
+        echo "Будут установлены следующие модули:"
+    else
+        echo "Будут удалены следующие модули:"
+    fi
+    for m in "${MODULES[@]}"; do
+        echo " - $m"
+    done
+    confirm "Are you sure you want to continue?"
 fi
 
 # Собственно выполнение команды над модулями

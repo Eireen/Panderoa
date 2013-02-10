@@ -326,22 +326,33 @@ function check_required_options() {
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списка
 function check_already_installed() {
-    declare -A CHECKS
+    declare -A checks
     for module in "${MODULES[@]}"; do
         get_module_installed_var $module
         eval "$MODULE_VAR=false"
         cheek_module $module
-        eval "CHECKS[$module]=\$$MODULE_VAR"
+        eval "local installed=\$$MODULE_VAR"
+        if [[ ($COMMAND = 'remove' || $COMMAND = 'purge') && $installed = false ]]; then
+            echo "Module $module is not installed"
+            remove_from_list $module
+            continue
+        else
+            eval "checks[$module]=\$$MODULE_VAR"
+        fi
     done
+    if [[ $COMMAND != 'install' ]]; then
+        return
+    fi
     for module in "${MODULES[@]}"; do
+        get_module_installed_var $module
         eval "$MODULE_VAR=false"
         check_module $module
-        eval "local installed=\$$MODULE_VAR"
-        if [[ $installed = true && ${CHECKS[$module]} = true ]]; then
+        eval "installed=\$$MODULE_VAR"
+        if [[ $installed = true && ${checks[$module]} = true ]]; then
             echo "Module $module is already installed"
             remove_from_list $module
         fi
-        if [[ $installed = false && ${CHECKS[$module]} = true ]]; then
+        if [[ $installed = false && ${checks[$module]} = true ]]; then
             echo "Module $module is already installed, but with different parameters"
             exit 1
         fi

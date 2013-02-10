@@ -88,13 +88,16 @@ function check_installed_packs() {
     get_module_installed_var $module
     eval "$MODULE_VAR=true"
     for pack in "${PACKS[@]}"; do
-        local result=`aptitude search "^$pack$"` # TODO: too slow; maybe use dpkg
+        local result=`aptitude search "^$pack$"`
         if [[ $? -ne 0 ]]; then
             eval "${MODULE_VAR}=false"
             return
         fi
         local state=${result:0:1}
-        if [[ $state = 'p' || $state = 'c' ]]; then
+        if [[ $state = 'c' ]]; then
+            eval "${MODULE_VAR}=removed"
+            return
+        elif [[ $state = 'p' ]]; then
             eval "${MODULE_VAR}=false"
             return
         fi
