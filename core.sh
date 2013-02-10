@@ -162,9 +162,20 @@ function check_option_arg() {
 function parse_options() {
     local module="${MODULES[0]}"
     require_opts $module
-    LONG_OPTS="$LONG_OPTS,conf:"
 
-    local parsed=`getopt -o $SHORT_OPTS -l ${LONG_OPTS} -- "$@"`
+    local cmd_str="getopt"
+    if [[ ! -z $SHORT_OPTS ]]; then
+        cmd_str="$cmd_str -o $SHORT_OPTS"
+    fi
+
+    if [[ ! -z $LONG_OPTS ]]; then
+        LONG_OPTS="$LONG_OPTS,"
+    fi
+    LONG_OPTS="${LONG_OPTS}conf:"
+
+    cmd_str="$cmd_str -l $LONG_OPTS"
+
+    local parsed=`$cmd_str -- "$@"`
     if [[ $? -ne 0 ]]; then
         # TODO: echo "getopt error" >&2
         exit 1
@@ -217,16 +228,27 @@ function parse_options() {
 }
 
 # Prepare a list of packages to remove for the specified module
+# Удаление пакетов, используемых другими модулями
 # $1: module
 function packs_to_remove() {
     check_num_args 1 $# $FUNCNAME
 
     require_packs "$1"
 
-    local res_packs="${PACKS[@]}"
+    declare -a res_packs=("${PACKS[@]}")
 
-    for module in "${MODULES[@]}"; do
+    for module in "${STANDARD_MODULES[@]}"; do
         if [[ $1 != $module ]]; then
+            [[ ${MODULES[@]} =~ $module ]] && {
+                continue
+            }
+            cheek_module "$module"
+            get_module_installed_var $module
+            eval "local installed=\$$MODULE_VAR"
+            if [[ $installed = false ]]; then
+                continue
+            fi
+
             require_packs "$module"
 
             local i=0
@@ -246,7 +268,7 @@ function packs_to_remove() {
         fi
     done
 
-    PACKS="${res_packs[@]}"
+    PACKS=(${res_packs[@]})
 }
 
 # Проверка наличия требуемых опций
