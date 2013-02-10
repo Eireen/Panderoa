@@ -1,5 +1,11 @@
 #!/bin/bash
 
+require_packs 'user'
+
+packs_to_remove 'user'
+
+purge_packs
+
 [[ ${!USER_OPTS[@]} =~ 'login' ]] && {
     local login=${USER_OPTS['login']}
 } || {

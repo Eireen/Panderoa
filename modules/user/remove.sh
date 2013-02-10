@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo "Removing 'user'"
+. ./$MODULES_PATH/user/purge.sh

@@ -30,6 +30,6 @@ egrep "^$login" /etc/passwd >/dev/null && {
 }
 
 # Add user to 'sudo' group (if option '-s' is specified)
-if [[ ${!USER_OPTS[@]} =~ 's' ]]; then
+: 'if [[ ${!USER_OPTS[@]} =~ s ]]; then
     gpasswd -a $login sudo
-fi
+fi'

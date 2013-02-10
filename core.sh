@@ -331,8 +331,9 @@ function check_already_installed() {
         get_module_installed_var $module
         eval "$MODULE_VAR=false"
         cheek_module $module
+        get_module_installed_var $module
         eval "local installed=\$$MODULE_VAR"
-        if [[ ($COMMAND = 'remove' || $COMMAND = 'purge') && $installed = false ]]; then
+        if [[ $COMMAND != 'install' && $installed = false ]]; then
             echo "Module $module is not installed"
             remove_from_list $module
             continue
@@ -347,6 +348,7 @@ function check_already_installed() {
         get_module_installed_var $module
         eval "$MODULE_VAR=false"
         check_module $module
+        get_module_installed_var $module
         eval "installed=\$$MODULE_VAR"
         if [[ $installed = true && ${checks[$module]} = true ]]; then
             echo "Module $module is already installed"

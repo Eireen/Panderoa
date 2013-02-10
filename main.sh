@@ -54,20 +54,27 @@ if [[ ! -z $CONF ]]; then
 fi
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-if [[ $COMMAND = 'install' || $COMMAND = 'remove' || $COMMAND = 'purge' ]]; then
+if [[ $COMMAND != 'check' && $COMMAND != 'cheek' ]]; then
     check_already_installed
     if [[ ${#MODULES[@]} -eq 0 ]]; then
         exit
     fi
-    if [[ $COMMAND = 'install' ]]; then
-        echo "Будут установлены следующие модули:"
-    else
-        echo "Будут удалены следующие модули:"
+
+    function ask_confirm() {
+        if [[ $COMMAND = 'install' ]]; then
+            echo "Будут установлены следующие модули:"
+        elif [[ $COMMAND = 'purge' || $COMMAND = 'remove' ]]; then
+            echo "Будут удалены следующие модули:"
+        fi
+        for m in "${MODULES[@]}"; do
+            echo " - $m"
+        done
+        confirm "Are you sure you want to continue?"
+    }
+
+    if [[ $COMMAND = 'install' || $COMMAND = 'remove' || $COMMAND = 'purge' ]]; then
+        ask_confirm
     fi
-    for m in "${MODULES[@]}"; do
-        echo " - $m"
-    done
-    confirm "Are you sure you want to continue?"
 fi
 
 # Собственно выполнение команды над модулями
