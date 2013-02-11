@@ -31,13 +31,10 @@ COMMANDS_FOR_ADDING=( 'install' )
 if [[ ${COMMANDS_FOR_ADDING[@]} =~ $COMMAND ]]; then
     extend_modules_by_deps
     echo_added_modules
-    if [[ ${#ADDED_MODULES[@]} -gt 0 ]]; then
-        confirm "Are you sure you want to continue?" "Installation was cancelled by user."
-    fi
-fi  
+fi
 
 # Объявления массивов опций для модулей
-for module in "${MODULES[@]}"; do
+for module in "${STANDARD_MODULES[@]}"; do
     get_module_opts_var $module
     declare -A "$MODULE_VAR"
 done
@@ -53,8 +50,44 @@ if [[ ! -z $CONF ]]; then
     check_redundant_options
 fi
 
+if [[ $COMMAND = 'purge' ]]; then
+    # Проверка, существуют ли установленные модули, зависящие от удаляемых
+    for module in "${MODULES[@]}"; do
+        depending_on=()
+        for st_module in "${STANDARD_MODULES[@]}"; do
+            if [[ $st_module = $module ]]; then
+                continue
+            fi
+            [[ ${MODULES[@]} =~ $st_module ]] && {
+                continue
+            }
+
+            get_module_installed_var $st_module
+            eval "$MODULE_VAR=false"
+            check_module $st_module
+            get_module_installed_var $st_module
+            eval "installed=\$$MODULE_VAR"
+            if [[ $installed != true ]]; then
+                continue
+            fi
+
+            require_deps $st_module
+            [[ ${DEPS[@]} =~ $module ]] && {
+                depending_on[${#depending_on[@]}]=$st_module
+            }
+        done
+
+        if [[ ${#depending_on[@]} -gt 0 ]]; then
+            echo "Модуль $module входит в список зависимостей модулей: "
+            for m in "${depending_on[@]}"; do
+                echo " - $m"
+            done
+        fi
+    done
+fi
+
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-if [[ $COMMAND != 'check' && $COMMAND != 'cheek' ]]; then
+if [[ $COMMAND != 'check' ]]; then
     check_already_installed
     if [[ ${#MODULES[@]} -eq 0 ]]; then
         exit
@@ -62,9 +95,9 @@ if [[ $COMMAND != 'check' && $COMMAND != 'cheek' ]]; then
 
     function ask_confirm() {
         if [[ $COMMAND = 'install' ]]; then
-            echo "Будут установлены следующие модули:"
-        elif [[ $COMMAND = 'purge' || $COMMAND = 'remove' ]]; then
-            echo "Будут удалены следующие модули:"
+            echo "Будут установлены модули:"
+        elif [[ $COMMAND = 'purge' ]]; then
+            echo "Будут удалены модули:"
         fi
         for m in "${MODULES[@]}"; do
             echo " - $m"
@@ -72,7 +105,7 @@ if [[ $COMMAND != 'check' && $COMMAND != 'cheek' ]]; then
         confirm "Are you sure you want to continue?"
     }
 
-    if [[ $COMMAND = 'install' || $COMMAND = 'remove' || $COMMAND = 'purge' ]]; then
+    if [[ $COMMAND = 'install' || $COMMAND = 'purge' ]]; then
         ask_confirm
     fi
 fi
@@ -82,6 +115,6 @@ for module in "${MODULES[@]}"; do
     execute_module_command $module $COMMAND
 done
 
-if [[ $COMMAND = 'check' || $COMMAND = 'cheek' ]]; then
+if [[ $COMMAND = 'check' ]]; then
     echo_installed
 fi

@@ -61,20 +61,8 @@ function install_packs() {
     perform_at_packs "install"
 }
 
-function remove_packs() {
-    perform_at_packs "remove"
-}
-
 function purge_packs() {
     perform_at_packs "purge"
-}
-
-function update_packs() {
-    perform_at_packs "update"
-}
-
-function upgrade_packs() {
-    perform_at_packs "upgrade"
 }
 
 # Determines whether the packages of specified module are installed
@@ -94,10 +82,7 @@ function check_installed_packs() {
             return
         fi
         local state=${result:0:1}
-        if [[ $state = 'c' ]]; then
-            eval "${MODULE_VAR}=removed"
-            return
-        elif [[ $state = 'p' ]]; then
+        if [[ $state = 'c' && $state = 'p' ]]; then
             eval "${MODULE_VAR}=false"
             return
         fi
@@ -149,17 +134,6 @@ function install_module() {
 }
 
 # $1 - module
-function remove_module() {
-    check_num_args 1 $# $FUNCNAME
-
-    execute_module_command $1 "remove"
-
-    if [[ 0 -ne $? ]]; then
-        return 2
-    fi
-}
-
-# $1 - module
 function purge_module() {
     check_num_args 1 $# $FUNCNAME
 
@@ -171,43 +145,10 @@ function purge_module() {
 }
 
 # $1 - module
-function update_module() {
-    check_num_args 1 $# $FUNCNAME
-
-    execute_module_command $1 "update"
-
-    if [[ 0 -ne $? ]]; then
-        return 2
-    fi
-}
-
-# $1 - module
-function upgrade_module() {
-    check_num_args 1 $# $FUNCNAME
-
-    execute_module_command $1 "upgrade"
-
-    if [[ 0 -ne $? ]]; then
-        return 2
-    fi
-}
-
-# $1 - module
 function check_module() {
     check_num_args 1 $# $FUNCNAME
 
     execute_module_command $1 "check"
-
-    if [[ 0 -ne $? ]]; then
-        return 2
-    fi
-}
-
-# $1 - module
-function cheek_module() {
-    check_num_args 1 $# $FUNCNAME
-
-    execute_module_command $1 "cheek"
 
     if [[ 0 -ne $? ]]; then
         return 2

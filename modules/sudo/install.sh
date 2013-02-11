@@ -1,5 +1,9 @@
 #!/bin/bash
 
-require_packs 'sudo'
+__namespace__() {
 
-install_packs
+	require_packs 'sudo'
+
+	install_packs
+
+}; __namespace__

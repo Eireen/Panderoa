@@ -2,9 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'sudo'
-
-	packs_to_remove 'sudo'
+	require_packs 'ssh'
 
 	purge_packs
 

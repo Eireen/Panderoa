@@ -1,8 +1,17 @@
 #!/bin/bash
 
-check_installed_packs 'user'
+__namespace__() {
 
-if [[ $USER_INSTALLED != false ]]; then
+    check_installed_packs 'user'
+
+    if [[ $USER_INSTALLED = false ]]; then
+        return
+    fi
+
+    if [[ ${#USER_OPTS[@]} -eq 0 ]]; then
+        return
+    fi
+
     local req_opts=( 'l=login' )
 
     check_required_options USER "${req_opts[@]}"
@@ -16,4 +25,5 @@ if [[ $USER_INSTALLED != false ]]; then
     egrep "^$login:" /etc/passwd > /dev/null || {
         USER_INSTALLED=false
     }
-fi
+
+}; __namespace__

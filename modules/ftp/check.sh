@@ -2,4 +2,6 @@
 
 __namespace__() {
 
+    check_installed_packs 'ftp'
+
 }; __namespace__

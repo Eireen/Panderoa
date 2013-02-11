@@ -1,3 +1,5 @@
 #!/bin/bash
 
-echo "Installing 'ssh'"
+__namespace__() {
+
+}; __namespace__

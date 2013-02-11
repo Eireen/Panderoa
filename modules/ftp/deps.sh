@@ -1,3 +1,3 @@
 #!/bin/bash
 
-PACKS=()
+DEPS=( user )

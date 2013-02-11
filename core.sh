@@ -242,7 +242,7 @@ function packs_to_remove() {
             [[ ${MODULES[@]} =~ $module ]] && {
                 continue
             }
-            cheek_module "$module"
+            check_module "$module"
             get_module_installed_var $module
             eval "local installed=\$$MODULE_VAR"
             if [[ $installed = false ]]; then
@@ -330,7 +330,7 @@ function check_already_installed() {
     for module in "${MODULES[@]}"; do
         get_module_installed_var $module
         eval "$MODULE_VAR=false"
-        cheek_module $module
+        check_module $module
         get_module_installed_var $module
         eval "local installed=\$$MODULE_VAR"
         if [[ $COMMAND != 'install' && $installed = false ]]; then
