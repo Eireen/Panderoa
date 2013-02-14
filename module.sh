@@ -63,6 +63,8 @@ function install_packs() {
 
 function purge_packs() {
     perform_at_packs "purge"
+    apt-get autoclean
+    apt-get autoremove
 }
 
 # Determines whether the packages of specified module are installed
@@ -76,14 +78,9 @@ function check_installed_packs() {
     get_module_installed_var $module
     eval "$MODULE_VAR=true"
     for pack in "${PACKS[@]}"; do
-        local result=`aptitude search "^$pack$"`
-        if [[ $? -ne 0 ]]; then
-            eval "${MODULE_VAR}=false"
-            return
-        fi
-        local state=${result:0:1}
-        if [[ $state = 'c' && $state = 'p' ]]; then
-            eval "${MODULE_VAR}=false"
+        check_installed_pack $pack
+        eval "${MODULE_VAR}=$PACK_INSTALLED"
+        if [[ $PACK_INSTALLED = false ]]; then
             return
         fi
     done

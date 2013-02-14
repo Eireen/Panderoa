@@ -31,6 +31,7 @@ function extend_modules_by_deps() {
     local j=0
 
     ADDED_MODULES=()
+    ORIGINAL_MODULES=(${MODULES[@]})
 
     while [ $i -lt ${#MODULES[@]} ]; do 
         local path="$MODULES_PATH/${MODULES[$i]}/$DEPS_FILE"
@@ -68,7 +69,9 @@ function extend_modules_by_deps() {
                     # Insert the dependent module before the current one
                     MODULES=( ${MODULES[@]:0:$i} "$dep_module" ${MODULES[@]:$i} )
 
-                    ADDED_MODULES[${#ADDED_MODULES[@]}]="$dep_module"
+                    [[ ${ORIGINAL_MODULES[@]} =~ $dep_module ]] || {
+                        ADDED_MODULES[${#ADDED_MODULES[@]}]="$dep_module"
+                    }
 
                     # Start over
                     i=-1
@@ -360,4 +363,3 @@ function check_already_installed() {
         fi
     done
 }
-

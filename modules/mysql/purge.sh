@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'basics'
-
+	require_packs 'mysql'
 	purge_packs
 
 }; __namespace__

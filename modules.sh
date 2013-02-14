@@ -1,8 +1,10 @@
 #!/bin/bash
 
 STANDARD_MODULES=(
-	basics
 	ftp
+	mysql
+	nginx
+	node
 	ssh
 	sudo
 	user

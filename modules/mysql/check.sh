@@ -2,6 +2,6 @@
 
 __namespace__() {
 
-	check_installed_packs 'basics'
-	
+	check_installed_packs 'mysql'
+
 }; __namespace__

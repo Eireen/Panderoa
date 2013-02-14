@@ -243,3 +243,31 @@ function echo_installed() {
         fi
     done
 }
+
+function check_installed_pack() {
+    check_num_args 1 $# $FUNCNAME
+    local pack=$1
+    PACK_INSTALLED=true
+    local result=`aptitude search "^$pack$"`
+        if [[ $? -ne 0 ]]; then
+            PACK_INSTALLED=false
+            return
+        fi
+        local state=${result:0:1}
+        if [[ $state = 'c' || $state = 'p' ]]; then
+            PACK_INSTALLED=false
+            return
+        fi
+}
+
+function check_installed_pack_by_dpkg() {
+    check_num_args 1 $# $FUNCNAME
+    local pack=$1
+    PACK_INSTALLED=false
+    local info=`dpkg -s $pack`
+    local pos=`awk -v a="$info" -v b="not-installed" 'BEGIN{print index(a,b)}'`
+    if [[ $pos -eq 0 ]]; then
+        PACK_INSTALLED=true
+    fi
+
+}
