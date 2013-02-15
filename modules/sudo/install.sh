@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'sudo'
-	install_packs
+	install_packs 'sudo'
 
 	local conf_file='/etc/sudoers'
 

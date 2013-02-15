@@ -1,10 +1,10 @@
 #!/bin/bash
 
-USER_OPTS['login']=testuser
-USER_OPTS['password']=testpass
-USER_OPTS['sudoer']=yes
-
 SUDO_OPTS['nopasswd']=yes
+
+USER_OPTS['login']=bright
+USER_OPTS['password']=bright
+USER_OPTS['sudoer']=yes
 
 SSH_OPTS['port']=12345
 SSH_OPTS['forbid-root']=yes

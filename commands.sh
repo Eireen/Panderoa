@@ -1,6 +1,6 @@
 #!/bin/bash
 
-COMMANDS=(
+STANDARD_COMMANDS=(
     install
     purge
     check

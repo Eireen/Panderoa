@@ -2,9 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'node'
-	packs_to_remove 'node'
-	purge_packs
+	purge_packs 'node'
 
 	dpkg -r 'nodejs'
 

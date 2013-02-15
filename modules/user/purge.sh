@@ -2,9 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'user'
-	packs_to_remove 'user'
-	purge_packs
+	purge_packs 'user'
 
 	[[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
         local login=${USER_OPTS[$BASH_REMATCH]}

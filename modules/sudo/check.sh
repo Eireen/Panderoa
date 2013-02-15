@@ -5,7 +5,7 @@ __namespace__() {
 	INSTALLED=true
 	INSTALLED_BY_DEFAULT=true
 
-	check_installed_packs 'sudo'
+	check_packs 'sudo'
 
 	if [[ $PACKS_INSTALLED = false ]]; then
 		INSTALLED_BY_DEFAULT=false

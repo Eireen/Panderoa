@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'node'
-	install_packs
+	install_packs 'node'
 
 	rm -rf /tmp/node-install
 	mkdir /tmp/node-install

@@ -2,9 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'sudo'
-	packs_to_remove 'sudo'
-	purge_packs
+	purge_packs 'sudo'
 
 	rm /etc/sudoers
 

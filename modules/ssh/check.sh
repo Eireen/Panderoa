@@ -7,7 +7,7 @@ __namespace__() {
 
 	local conf_file='/etc/ssh/sshd_config'
 
-	check_installed_packs 'ssh'
+	check_packs 'ssh'
 
 	if [[ $PACKS_INSTALLED = false ]]; then
 		INSTALLED_BY_DEFAULT=false

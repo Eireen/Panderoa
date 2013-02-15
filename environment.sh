@@ -1,7 +1,11 @@
 #!/bin/bash
 
-MODULES_PATH="modules"
 SHELL_EXTENSION="sh"
+
+PWD=`pwd`
+
+MODULES_PATH="modules"
+
 DEPS_FILE="deps.$SHELL_EXTENSION"
 PACKS_FILE="packs.$SHELL_EXTENSION"
 OPTS_FILE="opts.$SHELL_EXTENSION"

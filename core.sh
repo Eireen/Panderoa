@@ -19,7 +19,7 @@ function check_uid() {
 }
 
 # Проверка целостности проекта
-function check_project_integrity() {
+function check_project_completeness() {
     # TODO
     :
 }
@@ -31,7 +31,7 @@ function extend_modules_by_deps() {
     local j=0
 
     ADDED_MODULES=()
-    ORIGINAL_MODULES=(${MODULES[@]})
+    local original_modules=(${MODULES[@]})
 
     while [ $i -lt ${#MODULES[@]} ]; do 
         local path="$MODULES_PATH/${MODULES[$i]}/$DEPS_FILE"
@@ -69,7 +69,7 @@ function extend_modules_by_deps() {
                     # Insert the dependent module before the current one
                     MODULES=( ${MODULES[@]:0:$i} "$dep_module" ${MODULES[@]:$i} )
 
-                    [[ ${ORIGINAL_MODULES[@]} =~ $dep_module ]] || {
+                    [[ ${original_modules[@]} =~ $dep_module ]] || {
                         ADDED_MODULES[${#ADDED_MODULES[@]}]="$dep_module"
                     }
 
@@ -86,8 +86,8 @@ function extend_modules_by_deps() {
 
 # Проверка целостности модуля
 # $1 - module
-# Uses: MODULES_PATH, DEPS_FILE, PACKS_FILE, OPTS_FILE, COMMANDS, SHELL_EXTENSION
-function check_module_integrity() {
+# Uses: MODULES_PATH, DEPS_FILE, PACKS_FILE, OPTS_FILE, STANDARD_COMMANDS, SHELL_EXTENSION
+function check_module_completeness() {
     check_num_args 1 $# $FUNCNAME
     local module=$1
 
@@ -98,7 +98,7 @@ function check_module_integrity() {
     check_file "$module_dir/$PACKS_FILE"
     check_file "$module_dir/$OPTS_FILE"
 
-    for command in "${COMMANDS[@]}"; do
+    for command in "${STANDARD_COMMANDS[@]}"; do
         local command_file="$module_dir/$command.$SHELL_EXTENSION"
         check_file $command_file
     done
@@ -120,7 +120,7 @@ function get_modules() {
     done
 
     if [[ ${#MODULES[@]} -eq 0 ]]; then
-        echo "Modules are not specified"
+        echo "Modules are not specified!"
         exit 1
     fi
 }
@@ -128,7 +128,7 @@ function get_modules() {
 # Определение команды, выполняемой над модулями
 function get_command() {
     for arg; do
-        [[ ${COMMANDS[@]} =~ $arg ]] && {
+        [[ ${STANDARD_COMMANDS[@]} =~ $arg ]] && {
             if [[ -z "$COMMAND" ]]; then
                 COMMAND="$arg"
                 break
@@ -232,8 +232,8 @@ function parse_options() {
 
 # Prepare a list of packages to remove for the specified module
 # Удаление пакетов, используемых другими модулями
-# $1: module
-function packs_to_remove() {
+# $1 - module
+function get_unused_packs() {
     check_num_args 1 $# $FUNCNAME
 
     require_packs "$1"
@@ -271,61 +271,8 @@ function packs_to_remove() {
     PACKS=(${res_packs[@]})
 }
 
-# Проверка наличия требуемых опций
-# Uses: OPTIONS
-# $1: module
-# $2: options like 'l', 'login', 'l=login'
-function check_required_options() {
-
-    function check_opt() {
-        check_num_args 1 $# $FUNCNAME
-        local req_opt=$1
-        for opt in "${module_opts[@]}"; do
-            if [[ $opt = $req_opt ]]; then
-                return 0
-            fi
-        done
-        return 1
-    }
-
-    function print_err() {
-        check_num_args 1 $# $FUNCNAME
-        local opt=$1
-        echo "Required option '$opt' not found"
-    }
-
-    check_num_args 2 $# $FUNCNAME
-    local delimiter='='
-    local module=$1
-    get_module_opts_var $module
-    eval local module_opts=("\${!$MODULE_VAR[@]}")
-    shift
-    for req_opt; do
-        if [[ `expr index $req_opt $delimiter` -ne 0 ]]; then
-            local opt_forms=(${req_opt//$delimiter/ })
-            local found=false
-            for opt_form in "${opt_forms[@]}"; do
-                check_opt $opt_form
-                if [[ $? -eq 0 ]]; then
-                    found=true
-                fi
-            done
-            if [[ $found = false ]]; then
-                print_err $req_opt
-                exit 1
-            fi
-        else
-            check_opt $req_opt
-            if [[ $? -ne 0 ]]; then
-                print_err $req_opt
-                exit 1
-            fi
-        fi
-    done
-}
-
-# Проверить, какие из добавленных модулей уже установлены и удалить их из списка
-function check_already_installed() {
+# Проверка уже установленных (при вызове install) или отсутствующих (при вызове check или purge) модулей и удаление их из списка
+function check_modules_status() {
     for module in "${MODULES[@]}"; do
         check_module $module
         if [[ $COMMAND = 'install' ]]; then
@@ -342,6 +289,39 @@ function check_already_installed() {
                 remove_from_list $module
                 continue
             fi
+        fi
+    done
+}
+
+# Проверка, существуют ли установленные модули, зависящие от удаляемых
+# Uses: MODULES, STANDARD_MODULES
+function check_dependents() {
+    for module in "${MODULES[@]}"; do
+        local dependents=()
+        for st_module in "${STANDARD_MODULES[@]}"; do
+            if [[ $st_module = $module ]]; then
+                continue
+            fi
+            [[ ${MODULES[@]} =~ $st_module ]] && {
+                continue
+            }
+
+            check_module $st_module
+            if [[ $INSTALLED != true ]]; then
+                continue
+            fi
+
+            require_deps $st_module
+            [[ ${DEPS[@]} =~ $module ]] && {
+                dependents[${#dependents[@]}]=$st_module
+            }
+        done
+
+        if [[ ${#dependents[@]} -gt 0 ]]; then
+            echo "The following modules depend on the module '$module':"
+            for m in "${dependents[@]}"; do
+                echo " - $m"
+            done
         fi
     done
 }

@@ -2,9 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'mongroup'
-	packs_to_remove 'mongroup'
-	purge_packs
+	purge_packs 'mongroup'
 
 	dpkg -r mongroup
 

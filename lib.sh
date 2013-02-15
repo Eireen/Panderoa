@@ -47,24 +47,6 @@ function check_file() {
     fi
 }
 
-# Determines whether the specified object exists as an element in an Array object
-# $1 - the array to search
-# $2 - the object to find in the array
-# return: 0 if the specified object exists as an element in the array; otherwise, 1
-function contains() {
-    check_num_args 2 $# $FUNCNAME
-
-    local array="$1[@]"; declare -a array=("${!array}")
-
-    for item in "${array[@]}"; do
-        if [[ $2 == $item ]]; then
-            return 0
-        fi
-    done
-
-    return 1
-}
-
 function array_into_buffer() {
     check_num_args 1 $# $FUNCNAME
 
@@ -123,8 +105,8 @@ function clear_from_repetitives() {
 # $2 - message printing if not sure
 function confirm() {
     check_num_args 1 $# $FUNCNAME
-    read -n 1 -p "$1 (y/[a])" SURE
-    [[ "$SURE" = y ]] || {
+    read -n 1 -p "$1 (y/[a])"
+    [[ $REPLY =~ ^[Yy]$ ]] || {
         echo
         if [[ $# -gt 1 ]]; then
             echo "$2"
@@ -146,19 +128,10 @@ function require_conf() {
         fi
     done
     if [[ ${#MODULES[@]} > 1 && -z $CONF ]]; then
-        echo "If you specify more than one module, config is required."
+        echo "To work with several modules, you must specify the configuration file."
         exit 1
     fi
 }
-
-# Объявления массивов опций для модулей
-# Uses: MODULES
-: 'function declare_options_arrays() {
-    for module in "${MODULES[@]}"; do
-        get_module_opts_var $module
-        declare -Ag "$MODULE_VAR"
-    done
-}'
 
 # Copies elements from OPTIONS to ${MODULE}_OPTS
 # Uses: OPTIONS, MODULES
@@ -168,7 +141,7 @@ function assign_module_opts() {
         if [[ $opt = 'conf' ]]; then
             continue
         fi
-        eval "$MODULE_VAR[$opt]="${OPTIONS[$opt]}""
+        eval "$MODULE_OPTS_VAR[$opt]="${OPTIONS[$opt]}""
     done
 }
 
@@ -185,35 +158,20 @@ function echo_added_modules() {
     done
 }
 
-# Имя переменной модуля
-# $1 - module
-# $2 - variable name
-function get_module_var() {
-    check_num_args 2 $# $FUNCNAME
-    local module=$1
-    local var_name=$2
-    local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
-    MODULE_VAR="${upcase_module}_${var_name}"
-}
-
 # Имя массива, хранящего опции модуля
 # $1 - module
 function get_module_opts_var() {
     check_num_args 1 $# $FUNCNAME
-    get_module_var $1 'OPTS'
-}
-
-# Имя переменной, хранящей индикатор установки модуля
-# $1 - module
-function get_module_installed_var() {
-    check_num_args 1 $# $FUNCNAME
-    get_module_var $1 'INSTALLED'
+    local module=$1
+    local var_name='OPTS'
+    local upcase_module="$(echo $module | tr '[a-z]' '[A-Z]')"
+    MODULE_OPTS_VAR="${upcase_module}_${var_name}"
 }
 
 # Uses: OPTIONS
 function check_redundant_options() {
     if [[ ${#OPTIONS[@]} -gt 1 ]]; then
-        echo "Warning: If you specify a config file, options in the console are ignored."
+        echo "Warning: If you specified a config file, options in the console are ignored."
     fi
 }
 
@@ -231,10 +189,10 @@ function remove_from_list() {
     done
 }
 
-# Uses: MODULES
-function echo_modules_installed() {
-    for module in "${!MODULES_INSTALLED[@]}"; do
-        if [[ ${MODULES_INSTALLED[$module]} = true ]]; then
+# Uses: MODULES_STATUS
+function echo_modules_status() {
+    for module in "${!MODULES_STATUS[@]}"; do
+        if [[ ${MODULES_STATUS[$module]} = true ]]; then
             echo "Module '$module' is installed"
         else
             echo "Module '$module' is not installed"
@@ -242,7 +200,7 @@ function echo_modules_installed() {
     done
 }
 
-function check_installed_pack_by_apt() {
+function check_pack_status_by_apt() {
     check_num_args 1 $# $FUNCNAME
     local pack=$1
     PACK_INSTALLED=true
@@ -258,7 +216,7 @@ function check_installed_pack_by_apt() {
         fi
 }
 
-function check_installed_pack_by_dpkg() {
+function check_pack_status_by_dpkg() {
     check_num_args 1 $# $FUNCNAME
     local pack=$1
     PACK_INSTALLED=true

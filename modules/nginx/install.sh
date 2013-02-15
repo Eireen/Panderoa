@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'nginx'
-	install_packs
+	install_packs 'nginx'
 
 	ORIGIN_DIR=`pwd`
 

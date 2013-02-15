@@ -6,11 +6,11 @@
 check_uid
 
 # Проверка целостности проекта
-check_project_integrity
+check_project_completeness
 
 # Проверка целостности всех модулей
 for module in "${STANDARD_MODULES[@]}"; do
-    check_module_integrity $module
+    check_module_completeness $module
 done
 
 # Команда
@@ -25,10 +25,8 @@ parse_options $*
 # Очистка списка модулей от повторяющихся элементов
 clear_from_repetitives MODULES
 
-COMMANDS_FOR_ADDING=( 'install' )
-
 # Расширение списка модулей зависимостями из deps-файлов
-if [[ ${COMMANDS_FOR_ADDING[@]} =~ $COMMAND ]]; then
+if [[ $COMMAND = 'install' ]]; then
     extend_modules_by_deps
     echo_added_modules
 fi
@@ -36,10 +34,10 @@ fi
 # Объявления массивов опций для модулей
 for module in "${STANDARD_MODULES[@]}"; do
     get_module_opts_var $module
-    declare -A "$MODULE_VAR"
+    declare -A "$MODULE_OPTS_VAR"
 done
 
-# Записать опции в переменную, используемую в скриптах модуля
+# Записать опции из консоли в переменную, используемую в скриптах модуля
 assign_module_opts
 
 # Подключить конфиг (если задан)
@@ -52,72 +50,39 @@ fi
 
 if [[ $COMMAND = 'purge' ]]; then
     # Проверка, существуют ли установленные модули, зависящие от удаляемых
-    for module in "${MODULES[@]}"; do
-        depending_on=()
-        for st_module in "${STANDARD_MODULES[@]}"; do
-            if [[ $st_module = $module ]]; then
-                continue
-            fi
-            [[ ${MODULES[@]} =~ $st_module ]] && {
-                continue
-            }
-
-            check_module $st_module
-            if [[ $INSTALLED != true ]]; then
-                continue
-            fi
-
-            require_deps $st_module
-            [[ ${DEPS[@]} =~ $module ]] && {
-                depending_on[${#depending_on[@]}]=$st_module
-            }
-        done
-
-        if [[ ${#depending_on[@]} -gt 0 ]]; then
-            echo "Модуль $module входит в список зависимостей модулей: "
-            for m in "${depending_on[@]}"; do
-                echo " - $m"
-            done
-        fi
-    done
+    check_dependents
 fi
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
-if [[ $COMMAND != 'check' ]]; then
-    check_already_installed
+if [[ $COMMAND = 'install' || $COMMAND = 'purge' ]]; then
+    check_modules_status
     if [[ ${#MODULES[@]} -eq 0 ]]; then
         exit
     fi
 
-    function ask_confirm() {
-        if [[ $COMMAND = 'install' ]]; then
-            echo "Будут установлены модули:"
-        elif [[ $COMMAND = 'purge' ]]; then
-            echo "Будут удалены модули:"
-        fi
-        for m in "${MODULES[@]}"; do
-            echo " - $m"
-        done
-        confirm "Are you sure you want to continue?"
-    }
-
-    if [[ $COMMAND = 'install' || $COMMAND = 'purge' ]]; then
-        ask_confirm
+    if [[ $COMMAND = 'install' ]]; then
+        echo "Modules that will be installed:"
+    elif [[ $COMMAND = 'purge' ]]; then
+        echo "Modules that will be purged:"
     fi
+    for m in "${MODULES[@]}"; do
+        echo " - $m"
+    done
+    confirm "Are you sure?"
 fi
 
-if [[ $COMMAND = 'check' ]]; then
-    declare -A MODULES_INSTALLED
-fi
+[[ $COMMAND = 'check' ]] && {
+    declare -A MODULES_STATUS
+}
 
 # Собственно выполнение команды над модулями
 for module in "${MODULES[@]}"; do
     execute_module_command $module $COMMAND
-    if [[ $COMMAND = 'check' ]]; then
-        MODULES_INSTALLED[$module]=$INSTALLED
-    fi
+    [[ $COMMAND = 'check' ]] && {
+        MODULES_STATUS[$module]=$INSTALLED
+    }
 done
 
-if [[ $COMMAND = 'check' ]]; then
-    echo_modules_installed
-fi
+[[ $COMMAND = 'check' ]] && {
+    echo_modules_status
+}

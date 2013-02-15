@@ -2,8 +2,6 @@
 
 __namespace__() {
 
-	require_packs 'ftp'
-	packs_to_remove 'ftp'
-	purge_packs
+	purge_packs 'ftp'
 
 }; __namespace__

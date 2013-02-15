@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'mysql'
-	install_packs
+	install_packs 'mysql'
 
 	mysql_secure_installation
 

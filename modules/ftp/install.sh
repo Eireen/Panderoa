@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'ftp'
-	install_packs
+	install_packs 'ftp'
 
 	local conf_file='/etc/vsftpd.conf'
 

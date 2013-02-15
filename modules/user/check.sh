@@ -5,7 +5,7 @@ __namespace__() {
     INSTALLED=true
     INSTALLED_BY_DEFAULT=true
 
-    check_installed_packs 'user'
+    check_packs 'user'
 
     if [[ $PACKS_INSTALLED = false ]]; then
         INSTALLED_BY_DEFAULT=false

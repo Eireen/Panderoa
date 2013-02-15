@@ -2,10 +2,9 @@
 
 __namespace__() {
 
-    require_packs 'user'
-    install_packs
+    install_packs 'user'
 
-    check_installed_pack_by_apt 'whois'
+    check_pack_status_by_apt 'whois'
     local purge_whois=false
     if [[ $PACK_INSTALLED = false ]]; then
         apt-get install -y whois > /dev/null

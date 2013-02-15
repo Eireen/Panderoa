@@ -2,8 +2,7 @@
 
 __namespace__() {
 
-	require_packs 'mongroup'
-	install_packs
+	install_packs 'mongroup'
 
 	ORIGIN_DIR=`pwd`
 

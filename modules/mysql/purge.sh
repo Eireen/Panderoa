@@ -2,8 +2,6 @@
 
 __namespace__() {
 
-	require_packs 'mysql'
-	packs_to_remove 'mysql'
-	purge_packs
+	purge_packs 'mysql'
 
 }; __namespace__

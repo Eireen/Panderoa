@@ -5,7 +5,7 @@ __namespace__() {
 	INSTALLED=true
 	INSTALLED_BY_DEFAULT=true
 
-	check_installed_packs 'mongroup'
+	check_packs 'mongroup'
 
 	if [[ $PACKS_INSTALLED = false ]]; then
 		INSTALLED_BY_DEFAULT=false
@@ -13,7 +13,7 @@ __namespace__() {
 		return
 	fi
 
-	check_installed_pack_by_dpkg 'mongroup'
+	check_pack_status_by_dpkg 'mongroup'
 
 	if [[ $PACK_INSTALLED = false ]]; then
 		INSTALLED_BY_DEFAULT=false
