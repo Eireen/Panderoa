@@ -2,28 +2,37 @@
 
 __namespace__() {
 
+    INSTALLED=true
+    INSTALLED_BY_DEFAULT=true
+
     check_installed_packs 'user'
 
-    if [[ $USER_INSTALLED = false ]]; then
+    if [[ $PACKS_INSTALLED = false ]]; then
+        INSTALLED_BY_DEFAULT=false
+        INSTALLED=false
         return
     fi
 
-    if [[ ${#USER_OPTS[@]} -eq 0 ]]; then
-        return
-    fi
-
-    local req_opts=( 'l=login' )
-
-    check_required_options USER "${req_opts[@]}"
-
-    [[ ${!USER_OPTS[@]} =~ login ]] && {
-        local login=${USER_OPTS['login']}
+    [[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
+        local login=${USER_OPTS[$BASH_REMATCH]}
+        grep "^$login:" /etc/passwd > /dev/null || {
+            INSTALLED=false
+            INSTALLED_BY_DEFAULT=false
+            return
+        }
     } || {
-        local login=${USER_OPTS['l']}
+        echo "Required option 'login' is not found"
+        exit 1
     }
 
-    egrep "^$login:" /etc/passwd > /dev/null || {
-        USER_INSTALLED=false
+    [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
+        if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
+            id $login | grep "sudo" > /dev/null || {
+                INSTALLED=false
+                INSTALLED_BY_DEFAULT=false
+                return
+            }
+        fi
     }
 
 }; __namespace__

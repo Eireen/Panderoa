@@ -3,6 +3,7 @@
 __namespace__() {
 
 	require_packs 'nginx'
+	packs_to_remove 'nginx'
 	purge_packs
 
 	dpkg -r nginx

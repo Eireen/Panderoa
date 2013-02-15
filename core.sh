@@ -242,13 +242,13 @@ function packs_to_remove() {
 
     for module in "${STANDARD_MODULES[@]}"; do
         if [[ $1 != $module ]]; then
+
             [[ ${MODULES[@]} =~ $module ]] && {
                 continue
             }
+
             check_module "$module"
-            get_module_installed_var $module
-            eval "local installed=\$$MODULE_VAR"
-            if [[ $installed = false ]]; then
+            if [[ $INSTALLED = false ]]; then
                 continue
             fi
 
@@ -256,16 +256,13 @@ function packs_to_remove() {
 
             local i=0
             while [[ $i -lt ${#PACKS[@]} ]]; do
-
                 local j=0
                 while [[ $j -lt ${#res_packs[@]} ]]; do
                     if [[ ${res_packs[$j]} == ${PACKS[$i]} ]]; then
                         res_packs=( ${res_packs[@]:0:$j} ${res_packs[@]:($j+1)} )
                     fi
-
                     j=$((j+1))
                 done
-
                 i=$((i+1))
             done
         fi
@@ -329,37 +326,22 @@ function check_required_options() {
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списка
 function check_already_installed() {
-    declare -A checks
     for module in "${MODULES[@]}"; do
-        get_module_installed_var $module
-        eval "$MODULE_VAR=false"
         check_module $module
-        get_module_installed_var $module
-        eval "local installed=\$$MODULE_VAR"
-        if [[ $COMMAND != 'install' && $installed = false ]]; then
-            echo "Module $module is not installed"
-            remove_from_list $module
-            continue
+        if [[ $COMMAND = 'install' ]]; then
+            if [[ $INSTALLED = true ]]; then
+                echo "Module '$module' is already installed"
+                remove_from_list $module
+            elif [[ $INSTALLED_BY_DEFAULT = true ]]; then
+                echo "Module '$module' is already installed, but with different parameters"
+                exit 1
+            fi
         else
-            eval "checks[$module]=\$$MODULE_VAR"
-        fi
-    done
-    if [[ $COMMAND != 'install' ]]; then
-        return
-    fi
-    for module in "${MODULES[@]}"; do
-        get_module_installed_var $module
-        eval "$MODULE_VAR=false"
-        check_module $module
-        get_module_installed_var $module
-        eval "installed=\$$MODULE_VAR"
-        if [[ $installed = true && ${checks[$module]} = true ]]; then
-            echo "Module $module is already installed"
-            remove_from_list $module
-        fi
-        if [[ $installed = false && ${checks[$module]} = true ]]; then
-            echo "Module $module is already installed, but with different parameters"
-            exit 1
+            if [[ $INSTALLED_BY_DEFAULT = false ]]; then
+                echo "Module '$module' is not installed"
+                remove_from_list $module
+                continue
+            fi
         fi
     done
 }

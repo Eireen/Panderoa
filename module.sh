@@ -74,13 +74,12 @@ function check_installed_packs() {
     local module=$1
 
     require_packs $module
+    PACKS_INSTALLED=true
 
-    get_module_installed_var $module
-    eval "$MODULE_VAR=true"
     for pack in "${PACKS[@]}"; do
-        check_installed_pack $pack
-        eval "${MODULE_VAR}=$PACK_INSTALLED"
+        check_installed_pack_by_apt $pack
         if [[ $PACK_INSTALLED = false ]]; then
+            PACKS_INSTALLED=false
             return
         fi
     done

@@ -232,19 +232,17 @@ function remove_from_list() {
 }
 
 # Uses: MODULES
-function echo_installed() {
-    for module in "${MODULES[@]}"; do
-        get_module_installed_var $module
-        eval "local installed=\$$MODULE_VAR"
-        if [[ $installed = true ]]; then
-            echo "The '$module' module is installed"
+function echo_modules_installed() {
+    for module in "${!MODULES_INSTALLED[@]}"; do
+        if [[ ${MODULES_INSTALLED[$module]} = true ]]; then
+            echo "Module '$module' is installed"
         else
-            echo "The '$module' module is not installed"
+            echo "Module '$module' is not installed"
         fi
     done
 }
 
-function check_installed_pack() {
+function check_installed_pack_by_apt() {
     check_num_args 1 $# $FUNCNAME
     local pack=$1
     PACK_INSTALLED=true
@@ -263,11 +261,14 @@ function check_installed_pack() {
 function check_installed_pack_by_dpkg() {
     check_num_args 1 $# $FUNCNAME
     local pack=$1
-    PACK_INSTALLED=false
+    PACK_INSTALLED=true
+    dpkg -s $pack >& /dev/null || {
+        PACK_INSTALLED=false
+        return
+    }
     local info=`dpkg -s $pack`
     local pos=`awk -v a="$info" -v b="not-installed" 'BEGIN{print index(a,b)}'`
-    if [[ $pos -eq 0 ]]; then
-        PACK_INSTALLED=true
+    if [[ $pos -ne 0 ]]; then
+        PACK_INSTALLED=false
     fi
-
 }

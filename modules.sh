@@ -2,6 +2,7 @@
 
 STANDARD_MODULES=(
 	ftp
+	mongroup
 	mysql
 	nginx
 	node

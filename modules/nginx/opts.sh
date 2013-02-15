@@ -1,4 +1,4 @@
 #!/bin/bash
 
-SHORT_OPTS=''
-LONG_OPTS='with-auth-module,with-gzip-static-module'
+SHORT_OPTS='ag'
+LONG_OPTS='auth,gzip-static'

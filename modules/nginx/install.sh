@@ -2,9 +2,6 @@
 
 __namespace__() {
 
-	apt-get update
-	apt-get upgrade --show-upgraded
-
 	require_packs 'nginx'
 	install_packs
 
@@ -23,15 +20,23 @@ __namespace__() {
 
 	local options="--prefix=$NGINX_HOME"
 
-	[[ ${!NGINX_OPTS[@]} =~ 'with-auth-module' ]] && {
-		wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar
-		tar -xzvf master.tar
-		rm master.tar
-		options="$options --add-module=../samizdatco-nginx-http-auth-digest-*"
+	if [[ ${FTP_OPTS[$BASH_REMATCH]} != no ]]; then
+			sed -e "s/^#\?local_enable=YES/local_enable=YES/" -i $conf_file
+		fi
+
+	[[ ${!NGINX_OPTS[@]} =~ a|(auth) ]] && {
+		if [[ ${NGINX_OPTS[$BASH_REMATCH]} != no ]]; then
+			wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar
+			tar -xzvf master.tar
+			rm master.tar
+			options="$options --add-module=../samizdatco-nginx-http-auth-digest-*"	
+		fi
 	}
 
-	[[ ${!NGINX_OPTS[@]} =~ 'with-gzip-static-module' ]] && {
-		options="$options --with-http_gzip_static_module"
+	[[ ${!NGINX_OPTS[@]} =~ g|(gzip-static) ]] && {
+		if [[ ${NGINX_OPTS[$BASH_REMATCH]} != no ]]; then
+			options="$options --with-http_gzip_static_module"
+		fi
 	}
 
 	cd nginx-*
@@ -42,8 +47,6 @@ __namespace__() {
 	rm -rf /tmp/nginx-install
 
 	mkdir -p $NGINX_HOME/logs
-
-	# adduser --system --no-create-home --disabled-login --disabled-password --group nginx
 
 	INIT_FILE="$MODULES_PATH/nginx/init-script.sh"
 	check_file $INIT_FILE

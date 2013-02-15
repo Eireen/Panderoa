@@ -3,47 +3,50 @@
 __namespace__() {
 
     require_packs 'user'
-
     install_packs
 
-    local result=`aptitude search whois`
-    local status=${result:0:1}
-    if [[ $status = 'p' || $status = 'c' ]]; then
+    check_installed_pack_by_apt 'whois'
+    local purge_whois=false
+    if [[ $PACK_INSTALLED = false ]]; then
         apt-get install -y whois > /dev/null
+        purge_whois=true
     fi
 
-    # TODO: DRY
-    [[ ${!USER_OPTS[@]} =~ 'login' ]] && {
-        local login=${USER_OPTS['login']}
+    [[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
+        local login=${USER_OPTS[$BASH_REMATCH]}
     } || {
-        local login=${USER_OPTS['l']}
+        echo "Required option 'login' is not found"
+        exit 1
     }
 
-    [[ ${!USER_OPTS[@]} =~ 'password' ]] && {
-        local password=${USER_OPTS['password']}
+    [[ ${!USER_OPTS[@]} =~ p|(password) ]] && {
+        local password=${USER_OPTS[$BASH_REMATCH]}
     } || {
-        local password=${USER_OPTS['p']}
+        echo "Required option 'password' is not found"
+        exit 1
     }
 
-    # Script to add a user to Linux system
-    egrep "^$login" /etc/passwd >/dev/null && {
+    grep "^$login:" /etc/passwd >/dev/null && {
         echo "User '$login' already exists!"
         exit 1
     } || {
-        local crypted_pass=`mkpasswd $password 12`
-        useradd -m -p $crypted_pass $login && echo "User '$login' has been successfully added to system!" || {
+        local crypted_pass=`mkpasswd $password 12` # TODO: Random salt!
+        useradd -m -s /bin/bash -p $crypted_pass $login && echo "User '$login' has been successfully added to system!" || {
             echo "Failed to add a user!"
             exit 1
         }
     }
 
-    # Add user to 'sudo' group (if option '-s' is specified)
-    : 'if [[ ${!USER_OPTS[@]} =~ s ]]; then
-        gpasswd -a $login sudo
-    fi'
-
-    if [[ $status = 'p' || $status = 'c' ]]; then
+    if [[ $purge_whois = true ]]; then
         apt-get purge -y whois > /dev/null
     fi
+
+    # Добавить пользователя в группу 'sudo'
+    [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
+        usermod -a -G sudo $login || {
+            echo "Failed to add a user to the 'sudo' group!"
+            exit 1
+        }
+    }
 
 }; __namespace__

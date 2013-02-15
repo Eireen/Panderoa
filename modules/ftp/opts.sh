@@ -1,4 +1,4 @@
 #!/bin/bash
 
-SHORT_OPTS=''
-LONG_OPTS=''
+SHORT_OPTS='alw'
+LONG_OPTS='disable-anonymous,enable-local,enable-write'

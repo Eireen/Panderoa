@@ -62,12 +62,8 @@ if [[ $COMMAND = 'purge' ]]; then
                 continue
             }
 
-            get_module_installed_var $st_module
-            eval "$MODULE_VAR=false"
             check_module $st_module
-            get_module_installed_var $st_module
-            eval "installed=\$$MODULE_VAR"
-            if [[ $installed != true ]]; then
+            if [[ $INSTALLED != true ]]; then
                 continue
             fi
 
@@ -110,11 +106,18 @@ if [[ $COMMAND != 'check' ]]; then
     fi
 fi
 
+if [[ $COMMAND = 'check' ]]; then
+    declare -A MODULES_INSTALLED
+fi
+
 # Собственно выполнение команды над модулями
 for module in "${MODULES[@]}"; do
     execute_module_command $module $COMMAND
+    if [[ $COMMAND = 'check' ]]; then
+        MODULES_INSTALLED[$module]=$INSTALLED
+    fi
 done
 
 if [[ $COMMAND = 'check' ]]; then
-    echo_installed
+    echo_modules_installed
 fi
