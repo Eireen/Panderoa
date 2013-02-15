@@ -2,6 +2,6 @@
 
 __namespace__() {
 
-	purge_packs 'ssh'
+    purge_packs 'ssh'
 
 }; __namespace__

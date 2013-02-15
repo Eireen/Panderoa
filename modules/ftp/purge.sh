@@ -2,6 +2,6 @@
 
 __namespace__() {
 
-	purge_packs 'ftp'
+    purge_packs 'ftp'
 
 }; __namespace__

@@ -2,19 +2,19 @@
 
 __namespace__() {
 
-	install_packs 'node'
+    install_packs 'node'
 
-	rm -rf /tmp/node-install
-	mkdir /tmp/node-install
-	cd /tmp/node-install
+    rm -rf /tmp/node-install
+    mkdir /tmp/node-install
+    cd /tmp/node-install
 
-	wget http://nodejs.org/dist/node-latest.tar.gz
+    wget http://nodejs.org/dist/node-latest.tar.gz
 
-	tar -xzf node-latest.tar.gz
-	rm node-latest.tar.gz
-	cd node-v*
-	./configure && make && checkinstall --install=yes --pkgname=nodejs --default
-	cd ../..
-	rm -rf /tmp/node-install
+    tar -xzf node-latest.tar.gz
+    rm node-latest.tar.gz
+    cd node-v*
+    ./configure && make && checkinstall --install=yes --pkgname=nodejs --default
+    cd ../..
+    rm -rf /tmp/node-install
 
 }; __namespace__

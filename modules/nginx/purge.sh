@@ -2,10 +2,10 @@
 
 __namespace__() {
 
-	purge_packs 'nginx'
+    purge_packs 'nginx'
 
-	dpkg -r nginx
+    dpkg -r nginx
 
-	rm -r /usr/local/nginx
+    rm -r /usr/local/nginx
 
 }; __namespace__

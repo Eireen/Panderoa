@@ -2,8 +2,8 @@
 
 __namespace__() {
 
-	install_packs 'mysql'
+    install_packs 'mysql'
 
-	mysql_secure_installation
+    mysql_secure_installation
 
 }; __namespace__

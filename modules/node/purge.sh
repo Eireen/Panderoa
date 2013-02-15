@@ -2,8 +2,8 @@
 
 __namespace__() {
 
-	purge_packs 'node'
+    purge_packs 'node'
 
-	dpkg -r 'nodejs'
+    dpkg -r 'nodejs'
 
 }; __namespace__

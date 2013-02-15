@@ -2,6 +2,6 @@
 
 __namespace__() {
 
-	purge_packs 'mysql'
+    purge_packs 'mysql'
 
 }; __namespace__

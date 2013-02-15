@@ -2,8 +2,8 @@
 
 __namespace__() {
 
-	purge_packs 'mongroup'
+    purge_packs 'mongroup'
 
-	dpkg -r mongroup
+    dpkg -r mongroup
 
 }; __namespace__

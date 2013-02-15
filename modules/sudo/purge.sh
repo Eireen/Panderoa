@@ -2,8 +2,8 @@
 
 __namespace__() {
 
-	purge_packs 'sudo'
+    purge_packs 'sudo'
 
-	rm /etc/sudoers
+    rm /etc/sudoers
 
 }; __namespace__
