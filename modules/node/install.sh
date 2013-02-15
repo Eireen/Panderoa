@@ -14,7 +14,8 @@ __namespace__() {
     rm node-latest.tar.gz
     cd node-v*
     ./configure && make && checkinstall --install=yes --pkgname=nodejs --default
-    cd ../..
+    
+    cd $MAIN_DIR
     rm -rf /tmp/node-install
 
 }; __namespace__

@@ -91,8 +91,8 @@ function purge_packs() {
     require_packs $module
     get_unused_packs $module
     perform_at_packs "purge"
-    apt-get autoclean
-    apt-get autoremove
+    apt-get autoclean -y
+    apt-get autoremove -y
 }
 
 # $1 - module

@@ -2,7 +2,7 @@
 
 SHELL_EXTENSION="sh"
 
-PWD=`pwd`
+MAIN_DIR=`pwd`
 
 MODULES_PATH="modules"
 

@@ -4,8 +4,6 @@ __namespace__() {
 
     install_packs 'mongroup'
 
-    ORIGIN_DIR=`pwd`
-
     if [[ ! -d '/usr/local/bin' ]]; then
         mkdir '/usr/local/bin'
     fi
@@ -17,7 +15,7 @@ __namespace__() {
     cd mongroup-master
     checkinstall --install=yes --pkgname=mongroup --default
 
-    cd $ORIGIN_DIR
+    cd $MAIN_DIR
     rm -r /tmp/mongroup
 
 }; __namespace__

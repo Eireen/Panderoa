@@ -4,8 +4,6 @@ __namespace__() {
 
     install_packs 'nginx'
 
-    ORIGIN_DIR=`pwd`
-
     rm -rf /tmp/nginx-install
     mkdir /tmp/nginx-install
     cd /tmp/nginx-install
@@ -41,8 +39,8 @@ __namespace__() {
     cd nginx-*
     ./configure $options
     make && checkinstall --install=yes --pkgname=nginx --default
-    cd ../..
-    cd $ORIGIN_DIR
+
+    cd $MAIN_DIR
     rm -rf /tmp/nginx-install
 
     mkdir -p $NGINX_HOME/logs
