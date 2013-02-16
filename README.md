@@ -3,7 +3,7 @@
 If you need to configure the web server, and you have nothing but a VPS with a newly installed Debian 6, 
 you can use this tool to quickly install and configure all of the necessary programs only a single line. 
 You can (and should :) change the scripts on your own, adding new modules and options or editing existing ones. 
-Once customized tool can then be used to set up any VPS with Debian 6 "from scratch" for your needs.
+Once customized tool can then be used to set up any VPS with Debian 6 from scratch for your needs.
 
 ## Installation
 
