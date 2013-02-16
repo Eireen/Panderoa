@@ -1,4 +1,4 @@
 #!/bin/bash
 
-SHORT_OPTS=''
-LONG_OPTS=''
+SHORT_OPTS='r'
+LONG_OPTS='remote-access'

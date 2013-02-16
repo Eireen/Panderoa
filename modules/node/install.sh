@@ -8,7 +8,7 @@ __namespace__() {
     mkdir /tmp/node-install
     cd /tmp/node-install
 
-    wget http://nodejs.org/dist/node-latest.tar.gz
+    wget -r http://nodejs.org/dist/node-latest.tar.gz
 
     tar -xzf node-latest.tar.gz
     rm node-latest.tar.gz
