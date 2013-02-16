@@ -9,7 +9,7 @@ __namespace__() {
         mkdir /tmp/nginx-install
         cd /tmp/nginx-install
 
-        wget -r http://nginx.org/download/nginx-1.2.7.tar.gz
+        wget http://nginx.org/download/nginx-1.2.7.tar.gz
 
         tar -xzvf nginx-*.tar.gz
         rm nginx-*.tar.gz
@@ -20,9 +20,9 @@ __namespace__() {
 
         [[ ${!NGINX_OPTS[@]} =~ a|(auth) ]] && {
             if [[ ${NGINX_OPTS[$BASH_REMATCH]} != no ]]; then
-                wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar
-                tar -xzvf master.tar
-                rm master.tar
+                wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar.gz
+                tar -xzvf master.tar.gz
+                rm master.tar.gz
                 options="$options --add-module=../samizdatco-nginx-http-auth-digest-*"  
             fi
         }
@@ -42,7 +42,7 @@ __namespace__() {
 
         mkdir -p $NGINX_HOME/logs
 
-        INIT_FILE="$MODULES_PATH/nginx/init-script.sh"
+        INIT_FILE="$MAIN_DIR/$MODULES_PATH/nginx/init-script.sh"
         check_file $INIT_FILE
         cp $INIT_FILE /etc/init.d/nginx
         chmod +x /etc/init.d/nginx

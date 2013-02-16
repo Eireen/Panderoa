@@ -11,11 +11,15 @@ __namespace__() {
 
     # Разрешить удаленный доступ
     [[ ${!MYSQL_OPTS[@]} =~ r|(remote-access) ]] && {
+        local param='bind-address'
         if [[ ${MYSQL_OPTS[$BASH_REMATCH]} != no ]]; then
-        	get_ip
-            sed -e "s/^bind-address\s\+=\s\+[0-9\.]\+/bind-address = $IP/" -i $conf_file
-            /etc/init.d/mysql restart
+            get_ip
+        	local value=$IP
+        else
+            local value='127.0.0.1'
         fi
+        sed -e "s/^$param\s\+=\s\+[0-9\.]\+/$param = $value/" -i $conf_file
+        /etc/init.d/mysql restart
     }
 
 }; __namespace__

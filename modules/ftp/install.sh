@@ -10,22 +10,32 @@ __namespace__() {
 
     # Выключить анонимный доступ к FTP-серверу
     [[ ${!FTP_OPTS[@]} =~ a|(disable-anonymous) ]] && {
+        local param='anonymous_enable'
         if [[ ${FTP_OPTS[$BASH_REMATCH]} != no ]]; then
-            sed -e "s/^anonymous_enable=YES/anonymous_enable=NO/" -i $conf_file
+            local value="NO"
+        else
+            local value="YES"
         fi
+        sed -e "s/^$param=[YESNO]\+/$param=$value/" -i $conf_file
     }
 
     # Дать возможность заходить на сервер локально
     [[ ${!FTP_OPTS[@]} =~ l|(enable-local) ]] && {
+        local param='local_enable'
         if [[ ${FTP_OPTS[$BASH_REMATCH]} != no ]]; then
-            sed -e "s/^#\?local_enable=YES/local_enable=YES/" -i $conf_file
+            sed -e "s/^#\?$param=YES/$param=YES/" -i $conf_file
+        else
+            sed -e "s/^$param=YES/#$param=YES/" -i $conf_file
         fi
     }
 
     # Разрешить закидывать файлы на сервер
     [[ ${!FTP_OPTS[@]} =~ w|(enable-write) ]] && {
+        local param='write_enable'
         if [[ ${FTP_OPTS[$BASH_REMATCH]} != no ]]; then
-            sed -e "s/^#\?write_enable=YES/write_enable=YES/" -i $conf_file
+            sed -e "s/^#\?$param=YES/$param=YES/" -i $conf_file
+        else
+            sed -e "s/^$param=YES/#$param=YES/" -i $conf_file
         fi
     }
 

@@ -4,6 +4,17 @@ __namespace__() {
 
     [[ ${MODIFY[@]} =~ mongroup ]] || {
         install_packs 'mongroup'
+        
+        # Установка mon
+        mkdir /tmp/mon 
+        cd /tmp/mon 
+        wget https://github.com/visionmedia/mon/archive/master.tar.gz
+        tar -xzvf master.tar.gz
+        rm master.tar.gz
+        cd mon-master
+        checkinstall --install=yes --pkgname=mon --default
+        cd $MAIN_DIR
+        rm -r /tmp/mon
 
         if [[ ! -d '/usr/local/bin' ]]; then
             mkdir '/usr/local/bin'

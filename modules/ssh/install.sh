@@ -17,8 +17,11 @@ __namespace__() {
     # Запрет прямого доступа по SSH для root
     # Warning: должен существовать хотя бы один еще пользователь на сервере, под которым можно будет зайти на последний.
     if [[ ${!SSH_OPTS[@]} =~ f|forbid-root ]]; then
+        local param='PermitRootLogin'
         if [[ ${SSH_OPTS[$BASH_REMATCH]} != no ]]; then
-            sed -e "s/^#\?\s*PermitRootLogin\s\+[yesno]\{2,3\}/PermitRootLogin no/" -i $conf_file
+            sed -e "s/^#\?\s*$param\s\+[yesno]\{2,3\}/$param no/" -i $conf_file
+        else
+            sed -e "s/^\s*$param\s\+[yesno]\{2,3\}/#$param no/" -i $conf_file
         fi
     fi
 

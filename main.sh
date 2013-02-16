@@ -55,21 +55,26 @@ fi
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
 if [[ $COMMAND = 'install' || $COMMAND = 'purge' ]]; then
-    declare -A MODIFY
+    MODIFY=()
+    NEW=()
     check_modules_status
     if [[ ${#MODULES[@]} -eq 0 ]]; then
         exit
     fi
 
-    if [[ $COMMAND = 'install' ]]; then
+    if [[ $COMMAND = 'install' && ${#NEW[@]} -gt 0 ]]; then
         echo "Modules that will be installed:"
+        for m in "${NEW[@]}"; do
+            echo " - $m"
+        done
+        confirm "Are you sure?"
     elif [[ $COMMAND = 'purge' ]]; then
         echo "Modules that will be purged:"
+        for m in "${MODULES[@]}"; do
+            echo " - $m"
+        done
+        confirm "Are you sure?"
     fi
-    for m in "${MODULES[@]}"; do
-        echo " - $m"
-    done
-    confirm "Are you sure?"
 fi
 
 [[ $COMMAND = 'check' ]] && {

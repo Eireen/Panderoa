@@ -10,8 +10,11 @@ __namespace__() {
 
     # Не требовать пароль при использовании sudo
     [[ ${!SUDO_OPTS[@]} =~ n|(nopasswd) ]] && {
+        local replacement="^#\?\s*%sudo\s\+ALL=.\+"
         if [[ ${SUDO_OPTS[$BASH_REMATCH]} != no ]]; then
-            sed -e "s/^#\?\s*%sudo\s\+ALL=.\+/%sudo ALL=(ALL) NOPASSWD: ALL/" -i $conf_file
+            sed -e "s/$replacement/%sudo ALL=(ALL) NOPASSWD: ALL/" -i $conf_file
+        else
+            sed -e "s/$replacement/%sudo ALL=(ALL) ALL/" -i $conf_file
         fi
     }
 

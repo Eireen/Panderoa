@@ -2,6 +2,13 @@
 
 __namespace__() {
 
+    [[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
+        local login=${USER_OPTS[$BASH_REMATCH]}
+    } || {
+        echo "Required option 'login' is not found"
+        exit 1
+    }
+
     [[ ${MODIFY[@]} =~ user ]] || {
         install_packs 'user'
 
@@ -11,13 +18,6 @@ __namespace__() {
             apt-get install -y whois > /dev/null
             purge_whois=true
         fi
-
-        [[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
-            local login=${USER_OPTS[$BASH_REMATCH]}
-        } || {
-            echo "Required option 'login' is not found"
-            exit 1
-        }
 
         [[ ${!USER_OPTS[@]} =~ p|(password) ]] && {
             local password=${USER_OPTS[$BASH_REMATCH]}
@@ -44,12 +44,17 @@ __namespace__() {
         fi
     }
 
-    # Добавить пользователя в группу 'sudo'
+    # Добавить пользователя в группу 'sudo' (или удалить)
     [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
-        usermod -a -G sudo $login || {
-            echo "Failed to add a user to the 'sudo' group!"
-            exit 1
-        }
+        if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
+            usermod -a -G sudo $login || {
+                echo "Failed to add a user to the 'sudo' group!"
+                exit 1
+            }
+        else
+            echo $login
+            deluser $login sudo
+        fi
     }
 
 }; __namespace__

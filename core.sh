@@ -282,6 +282,8 @@ function check_modules_status() {
             elif [[ $INSTALLED_BY_DEFAULT = true ]]; then
                 confirm "Module '$module' is already installed, but with different settings. Do I try to change them?" "Installation cancelled by user."
                 MODIFY[${#MODIFY[@]}]=$module
+            else
+                NEW[${#NEW}]=$module
             fi
         else
             if [[ $INSTALLED_BY_DEFAULT = false ]]; then

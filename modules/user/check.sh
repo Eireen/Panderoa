@@ -29,13 +29,17 @@ __namespace__() {
 
     # Пользователь добавлен в группу sudo
     [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
-        if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
-            id $login | grep "sudo" > /dev/null || {
+        id $login | grep "sudo" > /dev/null && {
+            if [[ ${USER_OPTS[$BASH_REMATCH]} = no ]]; then
                 INSTALLED=false
-                INSTALLED_BY_DEFAULT=false
                 return
-            }
-        fi
+            fi   
+        } || {
+            if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
+                INSTALLED=false
+                return
+            fi
+        }
     }
 
 }; __namespace__
