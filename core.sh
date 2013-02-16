@@ -283,7 +283,7 @@ function check_modules_status() {
                 confirm "Module '$module' is already installed, but with different settings. Do I try to change them?" "Installation cancelled by user."
                 MODIFY[${#MODIFY[@]}]=$module
             else
-                NEW[${#NEW}]=$module
+                NEW[${#NEW[@]}]=$module
             fi
         else
             if [[ $INSTALLED_BY_DEFAULT = false ]]; then
