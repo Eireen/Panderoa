@@ -27,7 +27,7 @@ __namespace__() {
         exit 1
     }
 
-    # Может ли пользователь вызывать sudo
+    # Пользователь добавлен в группу sudo
     [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
         if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
             id $login | grep "sudo" > /dev/null || {

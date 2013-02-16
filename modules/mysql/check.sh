@@ -15,7 +15,7 @@ __namespace__() {
 
     local conf_file='/etc/mysql/my.cnf'
 
-    # Выключить анонимный доступ к FTP-серверу
+    # Разрешить удаленный доступ
     [[ ${!MYSQL_OPTS[@]} =~ r|(remote-access) ]] && {
     	get_ip
     	grep "^bind-address = $IP$" $conf_file > /dev/null && {

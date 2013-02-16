@@ -15,6 +15,7 @@ __namespace__() {
 
     local conf_file='/etc/ssh/sshd_config'
 
+    # Номер порта
     if [[ ${!SSH_OPTS[@]} =~ p|(port) ]]; then
         local port=${SSH_OPTS[$BASH_REMATCH]}
         grep "^Port\s\+$port$" $conf_file > /dev/null || {
@@ -23,6 +24,7 @@ __namespace__() {
         }
     fi
 
+    # Запрет прямого доступа по SSH для root
     [[ ${!SSH_OPTS[@]} =~ f|forbid-root ]] && {
         grep '^PermitRootLogin no$' $conf_file > /dev/null && {
             if [[ ${SSH_OPTS[$BASH_REMATCH]} = no ]]; then

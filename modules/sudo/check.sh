@@ -15,6 +15,7 @@ __namespace__() {
 
     local conf_file='/etc/sudoers'
 
+    # Не требовать пароль при использовании sudo
     [[ ${!SUDO_OPTS[@]} =~ n|(nopasswd) ]] && {
     	grep '^%sudo ALL=(ALL) NOPASSWD: ALL$' $conf_file > /dev/null && {
             if [[ ${SUDO_OPTS[$BASH_REMATCH]} = no ]]; then
