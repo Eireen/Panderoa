@@ -2,7 +2,9 @@
 
 __namespace__() {
 
-    install_packs 'ssh'
+    [[ ${MODIFY[@]} =~ ssh ]] || {
+        install_packs 'ssh'
+    }
 
     local conf_file='/etc/ssh/sshd_config'
 

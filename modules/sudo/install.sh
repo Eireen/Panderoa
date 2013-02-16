@@ -2,7 +2,9 @@
 
 __namespace__() {
 
-    install_packs 'sudo'
+    [[ ${MODIFY[@]} =~ sudo ]] || {
+        install_packs 'sudo'
+    }
 
     local conf_file='/etc/sudoers'
 

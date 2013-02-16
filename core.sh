@@ -280,14 +280,13 @@ function check_modules_status() {
                 echo "Module '$module' is already installed"
                 remove_from_list $module
             elif [[ $INSTALLED_BY_DEFAULT = true ]]; then
-                echo "Module '$module' is already installed, but with different parameters"
-                exit 1
+                confirm "Module '$module' is already installed, but with different settings. Do I try to change them?" "Installation cancelled by user."
+                MODIFY[${#MODIFY[@]}]=$module
             fi
         else
             if [[ $INSTALLED_BY_DEFAULT = false ]]; then
                 echo "Module '$module' is not installed"
                 remove_from_list $module
-                continue
             fi
         fi
     done
@@ -324,4 +323,12 @@ function check_dependents() {
             done
         fi
     done
+}
+
+function get_ip() {
+    IP=`ip -4 a l dev eth1  | grep inet | awk '{ print $2 }'`
+    local pos=`expr index $IP /`
+    [[ $pos -ne 0 ]] && {
+        IP=${IP:0:(($pos-1))}
+    }
 }

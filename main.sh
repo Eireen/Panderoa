@@ -55,6 +55,7 @@ fi
 
 # Проверить, какие из добавленных модулей уже установлены и удалить их из списков
 if [[ $COMMAND = 'install' || $COMMAND = 'purge' ]]; then
+    declare -A MODIFY
     check_modules_status
     if [[ ${#MODULES[@]} -eq 0 ]]; then
         exit

@@ -2,7 +2,9 @@
 
 __namespace__() {
 
-    install_packs 'ftp'
+    [[ ${MODIFY[@]} =~ ftp ]] || {
+        install_packs 'ftp'
+    }
 
     local conf_file='/etc/vsftpd.conf'
 

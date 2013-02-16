@@ -13,9 +13,11 @@ __namespace__() {
         return
     fi
 
+    local conf_file='/etc/passwd'
+
     [[ ${!USER_OPTS[@]} =~ l|(login) ]] && {
         local login=${USER_OPTS[$BASH_REMATCH]}
-        grep "^$login:" /etc/passwd > /dev/null || {
+        grep "^$login:" $conf_file > /dev/null || {
             INSTALLED=false
             INSTALLED_BY_DEFAULT=false
             return
@@ -25,6 +27,7 @@ __namespace__() {
         exit 1
     }
 
+    # Может ли пользователь вызывать sudo
     [[ ${!USER_OPTS[@]} =~ s|(sudoer) ]] && {
         if [[ ${USER_OPTS[$BASH_REMATCH]} != no ]]; then
             id $login | grep "sudo" > /dev/null || {
