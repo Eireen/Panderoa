@@ -41,6 +41,8 @@ __namespace__() {
 
         if [[ $purge_whois = true ]]; then
             apt-get purge -y whois > /dev/null
+            apt-get autoclean
+            apt-get autoremove
         fi
     }
 
