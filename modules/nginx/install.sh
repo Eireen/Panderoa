@@ -9,9 +9,9 @@ __namespace__() {
         mkdir /tmp/nginx-install
         cd /tmp/nginx-install
 
-        wget http://nginx.org/download/nginx-1.2.7.tar.gz
+        wget --no-check-certificate http://nginx.org/download/nginx-1.2.7.tar.gz
 
-        tar -xzvf nginx-*.tar.gz
+        tar -xzf nginx-*.tar.gz
         rm nginx-*.tar.gz
 
         NGINX_HOME='/usr/local/nginx'
@@ -21,7 +21,7 @@ __namespace__() {
         [[ ${!NGINX_OPTS[@]} =~ a|(auth) ]] && {
             if [[ ${NGINX_OPTS[$BASH_REMATCH]} != no ]]; then
                 wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar.gz
-                tar -xzvf master.tar.gz
+                tar -xzf master.tar.gz
                 rm master.tar.gz
                 options="$options --add-module=../samizdatco-nginx-http-auth-digest-*"  
             fi

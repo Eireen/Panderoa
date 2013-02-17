@@ -8,11 +8,11 @@ __namespace__() {
         if [[ ! -d '/usr/local/bin' ]]; then
             mkdir '/usr/local/bin'
         fi
-        
+
         # Установка mon
         mkdir /tmp/mon 
         cd /tmp/mon 
-        wget https://github.com/visionmedia/mon/archive/master.tar.gz
+        wget --no-check-certificate https://github.com/visionmedia/mon/archive/master.tar.gz
         tar -xzvf master.tar.gz
         rm master.tar.gz
         cd mon-master
@@ -22,7 +22,7 @@ __namespace__() {
 
         mkdir -p /tmp/mongroup
         cd /tmp/mongroup
-        wget 'https://github.com/jgallen23/mongroup/archive/master.tar.gz'
+        wget --no-check-certificate 'https://github.com/jgallen23/mongroup/archive/master.tar.gz'
         tar -xzf 'master.tar.gz'
         cd mongroup-master
         checkinstall --install=yes --pkgname=mongroup --default
