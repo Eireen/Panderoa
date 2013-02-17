@@ -21,6 +21,13 @@ pand <command> <modules> [options]
 ## Commands
 
 ### install
+
+Before the first installation, don't forget to run:
+```bash
+apt-get update
+apt-get upgrade
+```
+
 ### purge
 ### check
 
