@@ -7,7 +7,10 @@ Once customized tool can then be used to set up any VPS with Debian 6 from scrat
 
 ## Installation
 
-Coming soon
+```bash
+wget --no-check-certificate https://github.com/Eireen/Panderoa/archive/master.tar.gz
+tar -xzvf master.tar.gz && rm master.tar.gz && cd Panderoa-master
+```
 
 ## Usage
 
@@ -18,6 +21,13 @@ pand <command> <modules> [options]
 ## Commands
 
 ### install
+
+Before the first installation, don't forget to run:
+```bash
+apt-get update
+apt-get upgrade
+```
+
 ### purge
 ### check
 
