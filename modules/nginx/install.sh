@@ -20,7 +20,7 @@ __namespace__() {
 
         [[ ${!NGINX_OPTS[@]} =~ a|(auth) ]] && {
             if [[ ${NGINX_OPTS[$BASH_REMATCH]} != no ]]; then
-                wget https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar.gz
+                wget --no-check-certificate https://github.com/samizdatco/nginx-http-auth-digest/tarball/master -O master.tar.gz
                 tar -xzf master.tar.gz
                 rm master.tar.gz
                 options="$options --add-module=../samizdatco-nginx-http-auth-digest-*"  
