@@ -1,3 +1,3 @@
 #!/bin/bash
 
-PACKS=( build-essential libssl-dev checkinstall )
+PACKS=( build-essential libssl-dev checkinstall python )
