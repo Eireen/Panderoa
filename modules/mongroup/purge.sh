@@ -6,4 +6,6 @@ __namespace__() {
 
     dpkg -r mongroup
 
+    dpkg -r mon
+
 }; __namespace__

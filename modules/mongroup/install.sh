@@ -5,6 +5,10 @@ __namespace__() {
     [[ ${MODIFY[@]} =~ mongroup ]] || {
         install_packs 'mongroup'
         
+        if [[ ! -d '/usr/local/bin' ]]; then
+            mkdir '/usr/local/bin'
+        fi
+        
         # Установка mon
         mkdir /tmp/mon 
         cd /tmp/mon 
@@ -15,10 +19,6 @@ __namespace__() {
         checkinstall --install=yes --pkgname=mon --default
         cd $MAIN_DIR
         rm -r /tmp/mon
-
-        if [[ ! -d '/usr/local/bin' ]]; then
-            mkdir '/usr/local/bin'
-        fi
 
         mkdir -p /tmp/mongroup
         cd /tmp/mongroup
