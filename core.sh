@@ -307,13 +307,12 @@ function check_dependents() {
                 continue
             }
 
-            check_module $st_module
-            if [[ $INSTALLED != true ]]; then
-                continue
-            fi
-
             require_deps $st_module
             [[ ${DEPS[@]} =~ $module ]] && {
+                check_module $st_module
+                if [[ $INSTALLED != true ]]; then
+                    continue
+                fi
                 dependents[${#dependents[@]}]=$st_module
             }
         done
