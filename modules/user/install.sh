@@ -32,7 +32,8 @@ __namespace__() {
             echo "User '$login' already exists!"
             exit 1
         } || {
-            local crypted_pass=`mkpasswd $password 12` # TODO: Random salt!
+            local salt=`tr -dc 0-9 < /dev/urandom | head -c 2 | xargs`
+            local crypted_pass=`mkpasswd $password $salt`
             useradd -m -s /bin/bash -p $crypted_pass $login && echo "User '$login' has been successfully added to system!" || {
                 echo "Failed to add a user!"
                 exit 1

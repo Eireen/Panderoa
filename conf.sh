@@ -2,8 +2,8 @@
 
 SUDO_OPTS['nopasswd']=yes
 
-USER_OPTS['login']=someuser
-USER_OPTS['password']=somepass
+USER_OPTS['login']=testuser
+USER_OPTS['password']=testpass
 USER_OPTS['sudoer']=yes
 
 SSH_OPTS['port']=54321
