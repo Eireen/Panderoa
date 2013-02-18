@@ -2,11 +2,11 @@
 
 SUDO_OPTS['nopasswd']=yes
 
-USER_OPTS['login']=bright
-USER_OPTS['password']=bright
+USER_OPTS['login']=someuser
+USER_OPTS['password']=somepass
 USER_OPTS['sudoer']=yes
 
-SSH_OPTS['port']=12345
+SSH_OPTS['port']=54321
 SSH_OPTS['forbid-root']=yes
 
 FTP_OPTS['disable-anonymous']=yes
